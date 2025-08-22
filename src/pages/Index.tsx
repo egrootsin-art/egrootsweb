@@ -1,141 +1,220 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import HeroSection from '@/components/HeroSection';
-import ProductCard from '@/components/ProductCard';
-import Newsletter from '@/components/Newsletter';
-import Testimonials from '@/components/Testimonials';
-import { featuredProducts, productCategories } from '@/data/products';
-import { ArrowRight, Zap, Shield, Truck, Headphones } from 'lucide-react';
+import Navigation from "@/components/Navigation";
+import HeroSection from "@/components/HeroSection";
+import ProductCard from "@/components/ProductCard";
+import Newsletter from "@/components/Newsletter";
+import Testimonials from "@/components/Testimonials";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { featuredProducts, categories } from "@/data/products";
+import { ArrowRight, Package, Users, Award, Zap } from "lucide-react";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      <Navigation />
       <HeroSection />
-
-      {/* Featured Products Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      {/* Featured Categories */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Featured Products
+              Explore Our <span className="text-primary">Tech Categories</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Discover our most popular electronics and kits loved by innovators worldwide
-            </p>
-            <Link to="/products">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white">
-                View All Products
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Explore Categories
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              From beginner kits to professional tools, find everything you need for your next innovation
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              From 3D printing to robotics, discover the tools that will power your next breakthrough innovation.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {productCategories.map((category, index) => (
-              <Link 
-                key={category.id}
-                to={`/products?category=${category.id}`}
-                className="group"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
+              <Card 
+                key={category.name} 
+                className="group tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-card via-card to-muted/50 border border-border hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                      index === 0 ? 'bg-gradient-to-br from-primary to-primary/80' :
-                      index === 1 ? 'bg-gradient-to-br from-secondary to-secondary/80' :
-                      index === 2 ? 'bg-gradient-to-br from-accent to-accent/80' :
-                      'bg-gradient-to-br from-primary to-secondary'
-                    }`}>
-                      <Zap className="w-8 h-8 text-white" />
-                    </div>
-                    <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div className="aspect-video overflow-hidden">
+                  <img 
+                    src={category.image} 
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    <Badge variant="outline" className="text-xs">
+                      {category.productCount}
+                    </Badge>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-muted-foreground text-lg">
+                  <p className="text-sm text-muted-foreground mb-3">
                     {category.description}
                   </p>
-                </div>
-              </Link>
+                  <Button variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80">
+                    Explore <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose E-Groots?
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're committed to empowering the next generation of innovators
-            </p>
+      {/* Featured Products */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Featured <span className="text-primary">Products</span>
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Handpicked innovative products perfect for students and tech enthusiasts
+              </p>
+            </div>
+            <Button className="tech-hover bg-primary hover:bg-primary/90 text-primary-foreground">
+              View All Products
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Shield className="w-10 h-10 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProducts.slice(0, 6).map((product, index) => (
+              <div key={product.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                <ProductCard product={product} />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Quality Assured</h3>
-              <p className="text-muted-foreground">All products tested and certified for educational and professional use</p>
-            </div>
-
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Truck className="w-10 h-10 text-secondary" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Fast Delivery</h3>
-              <p className="text-muted-foreground">Quick shipping across India with secure packaging</p>
-            </div>
-
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Headphones className="w-10 h-10 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Expert Support</h3>
-              <p className="text-muted-foreground">Technical guidance and project assistance from our experts</p>
-            </div>
-
-            <div className="text-center group">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Zap className="w-10 h-10 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Innovation First</h3>
-              <p className="text-muted-foreground">Cutting-edge technology for future innovators and makers</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <Testimonials />
+      {/* Why Choose E-Groots */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Why Choose <span className="text-primary">E-Groots?</span>
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We're more than just an electronics store - we're your partner in innovation and learning.
+            </p>
+          </div>
 
-      {/* Newsletter */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="tech-hover gradient-card border-border/50 text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Package className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Quality Products</h3>
+                <p className="text-sm text-muted-foreground">
+                  Carefully curated components and kits from trusted manufacturers
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="tech-hover gradient-card border-border/50 text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-accent" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Student Focused</h3>
+                <p className="text-sm text-muted-foreground">
+                  Special pricing and resources designed for educational use
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="tech-hover gradient-card border-border/50 text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-8 h-8 text-secondary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Expert Support</h3>
+                <p className="text-sm text-muted-foreground">
+                  Technical guidance and project assistance from our engineering team
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="tech-hover gradient-card border-border/50 text-center">
+              <CardContent className="p-6">
+                <div className="w-16 h-16 bg-tech-orange/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-tech-orange" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Fast Delivery</h3>
+                <p className="text-sm text-muted-foreground">
+                  Quick shipping to get your projects started without delay
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <Testimonials />
       <Newsletter />
+
+      {/* Footer */}
+      <footer className="gradient-card border-t border-border/50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">EG</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">E-Groots</h3>
+                  <p className="text-xs text-muted-foreground">Empowering Future Innovators</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Your trusted partner for electronics, 3D printing, and robotics education.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Products</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">3D Printing Kits</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Educational Kits</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Competition Robots</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">PCB Design</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Tutorials</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Community Forum</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-border/50 mt-8 pt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              © 2024 E-Groots. All rights reserved. Built for the next generation of innovators.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
