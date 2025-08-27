@@ -1,4 +1,6 @@
-export const featuredProducts = [
+import { Product } from "@/components/ProductCard";
+
+export const featuredProducts: Product[] = [
   {
     id: "1",
     name: "Arduino Mega 2560 Starter Kit",

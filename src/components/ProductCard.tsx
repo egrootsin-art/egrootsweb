@@ -5,7 +5,26 @@ import { ShoppingCart, Star, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 
-const ProductCard = ({ product }) => {
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  category: string;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  inStock: boolean;
+  isNew?: boolean;
+  isFeatured?: boolean;
+}
+
+interface ProductCardProps {
+  product: Product;
+}
+
+const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toast } = useToast();
 

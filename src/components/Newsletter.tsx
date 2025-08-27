@@ -9,7 +9,7 @@ const Newsletter = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const { toast } = useToast();
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
