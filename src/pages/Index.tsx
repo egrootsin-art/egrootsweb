@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { featuredProducts, categories } from "@/data/products";
 import { ArrowRight, Package, Users, Award, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -75,9 +76,11 @@ const Index = () => {
                 Handpicked innovative products perfect for students and tech enthusiasts
               </p>
             </div>
-            <Button className="tech-hover bg-primary hover:bg-primary/90 text-primary-foreground">
-              View All Products
-              <ArrowRight className="w-4 h-4 ml-2" />
+            <Button asChild className="tech-hover bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Link to="/products">
+                View All Products
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
             </Button>
           </div>
 

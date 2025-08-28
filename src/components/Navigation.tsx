@@ -46,13 +46,13 @@ const Navigation = () => {
               <div className="absolute top-full left-0 mt-2 w-48 glass rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 <div className="p-2">
                   {categories.map((category) => (
-                    <a
+                    <Link
                       key={category}
-                      href={`/products?category=${encodeURIComponent(category)}`}
+                      to="/products"
                       className="block px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
                     >
                       {category}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -117,13 +117,13 @@ const Navigation = () => {
               <div className="space-y-1">
                 <p className="text-primary font-medium py-2">Products</p>
                 {categories.map((category) => (
-                  <a
+                  <Link
                     key={category}
-                    href={`/products?category=${encodeURIComponent(category)}`}
+                    to="/products"
                     className="block text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
                   >
                     {category}
-                  </a>
+                  </Link>
                 ))}
               </div>
               <Link to="/about" className="block text-foreground hover:text-primary transition-colors py-2">
