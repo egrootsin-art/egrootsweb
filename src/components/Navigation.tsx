@@ -3,6 +3,7 @@ import { ShoppingCart, Search, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
+import { Link } from "react-router-dom";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ const Navigation = () => {
         {/* Main Navigation */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">EG</span>
             </div>
@@ -31,13 +32,13 @@ const Navigation = () => {
               <h1 className="text-xl font-bold text-primary">E-Groots</h1>
               <p className="text-xs text-muted-foreground">Empowering Future Innovators</p>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/" className="text-foreground hover:text-primary transition-colors">
               Home
-            </a>
+            </Link>
             <div className="relative group">
               <button className="text-foreground hover:text-primary transition-colors">
                 Products
@@ -56,12 +57,12 @@ const Navigation = () => {
                 </div>
               </div>
             </div>
-            <a href="/about" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/about" className="text-foreground hover:text-primary transition-colors">
               About
-            </a>
-            <a href="/contact" className="text-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
-            </a>
+            </Link>
           </div>
 
           {/* Search & Cart */}
@@ -76,14 +77,16 @@ const Navigation = () => {
               </div>
             </div>
             
-            <Button variant="ghost" className="relative p-2">
-              <ShoppingCart className="w-5 h-5" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse-neon">
-                  {cartItemCount}
-                </span>
-              )}
-            </Button>
+            <Link to="/cart">
+              <Button variant="ghost" className="relative p-2">
+                <ShoppingCart className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse-neon">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
 
             {/* Mobile Menu Button */}
             <Button
@@ -108,9 +111,9 @@ const Navigation = () => {
             </div>
             
             <div className="space-y-2">
-              <a href="/" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link to="/" className="block text-foreground hover:text-primary transition-colors py-2">
                 Home
-              </a>
+              </Link>
               <div className="space-y-1">
                 <p className="text-primary font-medium py-2">Products</p>
                 {categories.map((category) => (
@@ -123,12 +126,12 @@ const Navigation = () => {
                   </a>
                 ))}
               </div>
-              <a href="/about" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link to="/about" className="block text-foreground hover:text-primary transition-colors py-2">
                 About
-              </a>
-              <a href="/contact" className="block text-foreground hover:text-primary transition-colors py-2">
+              </Link>
+              <Link to="/contact" className="block text-foreground hover:text-primary transition-colors py-2">
                 Contact
-              </a>
+              </Link>
             </div>
           </div>
         )}
