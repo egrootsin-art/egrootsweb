@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import ProductCard from "@/components/ProductCard";
-
+import Newsletter from "@/components/Newsletter";
 import Testimonials from "@/components/Testimonials";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,11 +54,9 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground mb-3">
                     {category.description}
                   </p>
-                  <Link to="/categories">
-                    <Button variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80">
-                      Explore <ArrowRight className="w-3 h-3 ml-1" />
-                    </Button>
-                  </Link>
+                  <Button variant="ghost" size="sm" className="p-0 h-auto text-primary hover:text-primary/80">
+                    Explore <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -161,6 +159,7 @@ const Index = () => {
       </section>
 
       <Testimonials />
+      <Newsletter />
 
       {/* Footer */}
       <footer className="gradient-card border-t border-border/50 py-12">
