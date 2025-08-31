@@ -63,6 +63,9 @@ const Navigation = () => {
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
+            <Link to="/my-orders" className="text-foreground hover:text-primary transition-colors">
+              My Orders
+            </Link>
           </div>
 
           {/* Search & Cart */}
@@ -131,6 +134,9 @@ const Navigation = () => {
               </Link>
               <Link to="/contact" className="block text-foreground hover:text-primary transition-colors py-2">
                 Contact
+              </Link>
+              <Link to="/my-orders" className="block text-foreground hover:text-primary transition-colors py-2">
+                My Orders
               </Link>
             </div>
           </div>

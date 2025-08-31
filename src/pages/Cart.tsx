@@ -106,9 +106,11 @@ const Cart = () => {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Proceed to Checkout
-                </Button>
+                <Link to="/order">
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                    Proceed to Checkout
+                  </Button>
+                </Link>
                 <Button 
                   variant="outline" 
                   className="w-full"
