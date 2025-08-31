@@ -10,6 +10,7 @@ import { Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Categories = () => {
+  // Categories page for tech products
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
