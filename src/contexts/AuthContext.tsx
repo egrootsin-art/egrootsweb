@@ -1,55 +1,86 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { loginUser, signupUser } from "@/api/auth";
+import axios from "@/api/axiosConfig";
 
 interface AuthContextType {
-  user: { email: string } | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  user: any | null;
   isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<{ email: string } | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const savedToken = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+
+    if (savedToken && savedUser) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
       setUser(JSON.parse(savedUser));
     }
   }, []);
 
+  // 🔹 LOGIN
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simple validation - in real app, this would be an API call
-    if (email && password) {
-      const userData = { email };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+    const res = await loginUser(email, password);
+
+    if (res.token && res.user) {
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${res.token}`;
+      setUser(res.user);
       return true;
     }
+
+    return false;
+  };
+
+  // 🔹 SIGNUP (Now saves new user to backend)
+  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+    const res = await signupUser(name, email, password);
+
+    if (res.token && res.user) {
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${res.token}`;
+      setUser(res.user);
+      return true;
+    }
+
     return false;
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
     setUser(null);
-    localStorage.removeItem('user');
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        signup,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

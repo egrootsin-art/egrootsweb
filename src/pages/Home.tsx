@@ -14,7 +14,8 @@ const Home = () => {
   };
 
   // Extract name from email (part before @)
-  const userName = user?.email ? user.email.split('@')[0] : 'User';
+ const userName = user?.name || 'User';
+
 
   return (
     <div className="min-h-screen bg-background">
