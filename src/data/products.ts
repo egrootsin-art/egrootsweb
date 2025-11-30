@@ -4,7 +4,7 @@ export const featuredProducts: Product[] = [
   {
     id: "1",
     name: "Arduino Mega 2560 Starter Kit",
-    price: 89.99,
+    price: 1,
     originalPrice: 119.99,
     image: "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=400&h=400&fit=crop",
     category: "Educational Kits",
@@ -18,7 +18,7 @@ export const featuredProducts: Product[] = [
   {
     id: "2", 
     name: "Ender 3 V2 3D Printer",
-    price: 259.99,
+    price: 1,
     originalPrice: 299.99,
     image: "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=400&fit=crop",
     category: "3D Printing Kits",
@@ -31,7 +31,7 @@ export const featuredProducts: Product[] = [
   {
     id: "3",
     name: "Raspberry Pi 4 Robotics Kit",
-    price: 199.99,
+    price: 1,
     image: "https://images.unsplash.com/photo-1518314916381-77a37c2a49ae?w=400&h=400&fit=crop",
     category: "Competition Robots",
     rating: 4.9,
@@ -44,7 +44,7 @@ export const featuredProducts: Product[] = [
   {
     id: "4",
     name: "Custom PCB Design Service",
-    price: 149.99,
+    price: 1,
     image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=400&h=400&fit=crop",
     category: "PCB Design Services",
     rating: 4.7,
@@ -56,7 +56,7 @@ export const featuredProducts: Product[] = [
   {
     id: "5",
     name: "ESP32 IoT Development Board",
-    price: 39.99,
+    price: 1,
     originalPrice: 49.99,
     image: "https://images.unsplash.com/photo-1518314916381-77a37c2a49ae?w=400&h=400&fit=crop",
     category: "Educational Kits",
@@ -68,7 +68,7 @@ export const featuredProducts: Product[] = [
   {
     id: "6",
     name: "Competition Robot Chassis Kit",
-    price: 329.99,
+    price: 1,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=400&fit=crop",
     category: "Competition Robots",
     rating: 4.8,

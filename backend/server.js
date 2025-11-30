@@ -5,37 +5,43 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middlewares
-app.use(cors());
+// Middleware
+app.use(cors({ origin: "http://localhost:8080" }));
 app.use(express.json());
 
-// Connect MongoDB
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log("DB Error:", err));
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB Connected"))
+.catch((err) => console.error("MongoDB Connection Error:", err));
 
-// Test Route
+// Base Route
 app.get('/', (req, res) => {
-  res.send('API is running!');
+  res.send('API is running...');
 });
 
-// AUTH ROUTES
-app.use("/api/auth", authRoutes);
+// Auth Routes
+app.use('/api/auth', authRoutes);
 
-// Send Order Confirmation Email
+// Payment Routes
+app.use('/api', paymentRoutes);
+
+// Order Email Route
 app.post('/api/send-order-email', async (req, res) => {
-  const { customerInfo, items, total, paymentMethod } = req.body;
-
-  if (!customerInfo || !items || !total || !paymentMethod) {
-    return res.status(400).json({ message: 'Missing order details' });
-  }
-
   try {
+    const { customerInfo, items, total, paymentMethod } = req.body;
+
+    if (!customerInfo?.email || !items || !total || !paymentMethod) {
+      return res.status(400).json({ message: 'Missing order details' });
+    }
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -44,49 +50,49 @@ app.post('/api/send-order-email', async (req, res) => {
       },
     });
 
-    const orderDetails = items
-      .map(
-        (item) =>
-          `${item.name} (Qty: ${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`
+    const itemsList = items
+      .map((item) =>
+        `${item.name} - Qty: ${item.quantity} - ₹${(
+          item.price * item.quantity
+        ).toFixed(2)}`
       )
       .join('\n');
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Your Shop" <${process.env.EMAIL_USER}>`,
       to: customerInfo.email,
-      subject: 'Order Confirmation - Thank you for your purchase!',
+      subject: "Order Confirmation - Your Purchase Details",
       text: `
-Dear ${customerInfo.name},
+Hello ${customerInfo.name},
 
-Thank you for your order!
+Thank you for shopping with us!
 
-Order Summary:
------------------
-${orderDetails}
+🧾 Order Summary:
+---------------------------------
+${itemsList}
 
-Total Amount: $${total.toFixed(2)}
+Total: ₹${total.toFixed(2)}
 Payment Method: ${paymentMethod}
 
-Shipping Address:
-${customerInfo.address}
-
-We appreciate your business!
-
-Best regards,
-Your Shop Team
+Best Regards,
+Egroots Innovate
       `,
     };
 
     await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ message: 'Order confirmation email sent successfully' });
-  } catch (error) {
-    console.error('Email sending failed:', error);
-    res.status(500).json({ message: 'Failed to send email', error: error.message });
+    res.json({ message: 'Order confirmation sent successfully' });
+  } catch (err) {
+    console.error('Email Sending Error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Unknown Route Handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
+
+// Server Start
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
