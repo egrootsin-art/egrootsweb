@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useOrder } from "@/contexts/OrderContext";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Building2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 declare global {
   interface Window {
@@ -36,6 +35,59 @@ const Order = () => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
 
+  // NEW UPDATED ORDER HANDLER — NO PAYMENT REQUIRED
+ const handlePlaceOrder = async () => {
+  if (!customerInfo.name || !customerInfo.email || !customerInfo.phone) {
+    return toast({
+      title: "Missing Information",
+      description: "Fill required customer details.",
+      variant: "destructive",
+    });
+  }
+
+  setIsProcessing(true);
+
+  try {
+    // Save to MongoDB ✨
+    const res = await axios.post("http://localhost:5000/api/orders/create", {
+      customer: customerInfo,
+      items,
+      totalAmount: total,
+    });
+
+    const orderId = res.data.orderId;
+
+    // Send confirmation email
+    await axios.post("http://localhost:5000/api/send-order-email", {
+      customerInfo,
+      items,
+      total,
+      paymentMethod: "Pending",
+    });
+
+    toast({
+      title: "Order Saved 🛒",
+      description: `Order #${orderId} saved to database`,
+    });
+
+    clearCart();
+    navigate("/my-orders");
+
+  } catch (error) {
+    console.error("Order error:", error);
+    toast({
+      title: "Order Failed",
+      description: "Unable to save order",
+      variant: "destructive",
+    });
+  }
+
+  setIsProcessing(false);
+};
+
+
+  // OLD RAZORPAY PAYMENT CODE — SAFE IN COMMENTS FOR FUTURE USE
+  /*
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -62,7 +114,7 @@ const Order = () => {
       const orderResponse = await fetch("http://localhost:5000/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total*100 }),
+        body: JSON.stringify({ amount: total * 100 }),
       });
 
       const orderData = await orderResponse.json();
@@ -75,64 +127,50 @@ const Order = () => {
         description: "Order Payment",
         order_id: orderData.id,
 
-       handler: async (response: any) => {
-  try {
-    await axios.post("http://localhost:5000/api/payment/verify", {
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_signature: response.razorpay_signature,
-    });
+        handler: async (response: any) => {
+          try {
+            await axios.post("http://localhost:5000/api/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
 
-    const orderId = createOrder({
-      items,
-      total,
-      paymentMethod: "Razorpay",
-      paymentStatus: "completed",
-      customerInfo,
-    });
+            const orderId = createOrder({
+              items,
+              total,
+              paymentMethod: "Razorpay",
+              paymentStatus: "completed",
+              customerInfo,
+            });
 
-    await axios.post("http://localhost:5000/api/send-order-email", {
-      customerInfo,
-      items,
-      total,
-      paymentMethod: "Razorpay",
-    });
+            await axios.post("http://localhost:5000/api/send-order-email", {
+              customerInfo,
+              items,
+              total,
+              paymentMethod: "Razorpay",
+            });
 
-    toast({
-      title: "Order Successful 🎉",
-      description: `Order #${orderId.split("-")[1]} confirmed`,
-    });
+            toast({
+              title: "Order Successful 🎉",
+              description: `Order #${orderId.split("-")[1]} confirmed`,
+            });
 
-    clearCart();
-    navigate("/my-orders");
-  } catch (err) {
-    console.error(err);
-    toast({
-      title: "Verification Failed",
-      description: "Payment could not be verified",
-      variant: "destructive",
-    });
-  }
-},
+            clearCart();
+            navigate("/my-orders");
 
-
-        // Only Razorpay UPI method enabled
-        method: {
-          netbanking: false,
-          card: false,
-          upi: true,
-          wallet: false,
+          } catch (err) {
+            console.error(err);
+            toast({
+              title: "Verification Failed",
+              description: "Payment could not be verified",
+              variant: "destructive",
+            });
+          }
         },
 
-        prefill: {
-          name: customerInfo.name,
-          email: customerInfo.email,
-          contact: customerInfo.phone,
-        },
-
-        theme: {
-          color: "#00b894",
-        },
+        method: { upi: true, netbanking: false, card: false, wallet: false },
+        prefill: customerInfo,
+        theme: { color: "#00b894" },
       };
 
       const razorpay = new window.Razorpay(options);
@@ -149,6 +187,7 @@ const Order = () => {
 
     setIsProcessing(false);
   };
+  */
 
   if (items.length === 0) {
     return (
@@ -179,54 +218,30 @@ const Order = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-          {/* Customer Details */}
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                placeholder="Full Name *"
-                value={customerInfo.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-              />
-              <Input
-                type="email"
-                placeholder="Email *"
-                value={customerInfo.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-              />
-              <Input
-                placeholder="Phone Number *"
-                value={customerInfo.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-              />
-              <Input
-                placeholder="Address (optional)"
-                value={customerInfo.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-              />
+              <Input placeholder="Full Name *" value={customerInfo.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+              <Input type="email" placeholder="Email *" value={customerInfo.email} onChange={(e) => handleInputChange("email", e.target.value)} />
+              <Input placeholder="Phone Number *" value={customerInfo.phone} onChange={(e) => handleInputChange("phone", e.target.value)} />
+              <Input placeholder="Address (optional)" value={customerInfo.address} onChange={(e) => handleInputChange("address", e.target.value)} />
             </CardContent>
           </Card>
 
-          {/* Order Summary */}
           <Card className="border-border/50 sticky top-24">
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
-
             <CardContent className="space-y-4">
-
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
                     <img src={item.image} className="w-12 h-12 rounded-md" />
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
                     <p>₹{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
@@ -240,11 +255,7 @@ const Order = () => {
                 <span>₹{total.toFixed(2)}</span>
               </div>
 
-              <Button
-                onClick={handlePlaceOrder}
-                disabled={isProcessing}
-                className="w-full"
-              >
+              <Button onClick={handlePlaceOrder} disabled={isProcessing} className="w-full">
                 {isProcessing ? "Processing..." : "Pay with Razorpay"}
               </Button>
 
