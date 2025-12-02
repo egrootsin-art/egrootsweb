@@ -87,4 +87,29 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
+// -------------------------------------------
+// ⚠️ TEMPORARY ROUTE — Create Admin (Run Once)
+// -------------------------------------------
+router.post("/create-admin", async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash("Admin@123", 10);
+
+    const admin = new User({
+      name: "Admin",
+      email: "admin@egroots.com",
+      password: hashedPassword,
+    });
+
+    await admin.save();
+
+    res.json({ message: "Admin created successfully" });
+  } catch (err) {
+    console.log("Admin Creation Error:", err);
+    res.status(500).json({ message: "Error creating admin" });
+  }
+});
+
+// -------------------------------------------
+
 module.exports = router;

@@ -127,8 +127,16 @@ const Login: React.FC = () => {
       }
 
       if (success) {
-        navigate("/");
-      } else {
+
+  // 🔥 ADMIN LOGIN CHECK
+  if (formData.email === "admin@egroots.com" && formData.password === "Admin@123") {
+    navigate("/admindashboard");   // redirect to admin
+  } else {
+    navigate("/");                 // redirect normal user
+  }
+
+}
+else {
         setErrors({
           general: isLogin
             ? "Invalid credentials. Please try again."
