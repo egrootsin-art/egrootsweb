@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -44,6 +45,8 @@ app.use('/api', paymentRoutes);
 
 // Order Routes
 app.use('/api/orders', orderRoutes);
+
+
 
 // Order Email Route
 app.post('/api/send-order-email', async (req, res) => {
