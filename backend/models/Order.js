@@ -10,6 +10,7 @@ const OrderSchema = new mongoose.Schema(
     },
     items: [
       {
+        _id: false,   // <-- FIX: Prevent Mongoose from expecting ObjectId
         name: String,
         quantity: Number,
         price: Number,
