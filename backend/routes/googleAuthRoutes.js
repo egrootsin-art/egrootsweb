@@ -1,70 +1,89 @@
-// routes/googleAuthRoutes.js
 const express = require("express");
-const router = express.Router();
-const { OAuth2Client } = require("google-auth-library");
+const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User"); // adjust path if your user model is named differently
+const User = require("../models/User");
+require("dotenv").config();
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const JWT_SECRET = process.env.JWT_SECRET || "changeme";
-const ADMIN_EMAIL = "bharanidharan.eg26@gmail.com"; // your admin email
+const router = express.Router();
 
-router.post("/google", async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ success: false, error: "No token provided" });
+// -------------------------
+// GOOGLE STRATEGY
+// -------------------------
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-    // Verify token with Google
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:5000/api/auth/google/callback",
+      session: false, // ⭐ IMPORTANT
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
 
-    const payload = ticket.getPayload();
-    const { email, name, sub: googleId, picture } = payload;
+        let user = await User.findOne({ email });
 
-    // Find or create user
-    let user = await User.findOne({ email });
+        if (!user) {
+          user = await User.create({
+            name: profile.displayName,
+            email,
+            picture: profile.photos[0].value,
+            password: null,
+          });
+        }
 
-    if (!user) {
-      user = await User.create({
-        fullName: name || email.split("@")[0],
-        email,
-        password: null,         // password-based login remains separate
-        googleId,
-        avatar: picture || null,
-        role: email === ADMIN_EMAIL ? "admin" : "user" // optional
-      });
-    } else {
-      // if existing user hasn't saved googleId, set it
-      if (!user.googleId) {
-        user.googleId = googleId;
-        await user.save();
+        // Generate JWT
+        const token = jwt.sign(
+          { userId: user._id },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        return done(null, { user, token });
+      } catch (error) {
+        return done(error, null);
       }
     }
+  )
+);
 
-    // Create your app JWT
-    const appToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role || "user" },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+// Disable sessions completely
+passport.serializeUser(() => {});
+passport.deserializeUser(() => {});
 
-    res.json({
-      success: true,
-      token: appToken,
-      user: {
-        id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role || "user",
-        avatar: user.avatar || null
-      }
-    });
-  } catch (err) {
-    console.error("Google auth error:", err);
-    return res.status(401).json({ success: false, error: "Invalid Google token" });
+// -------------------------
+// ROUTES
+// -------------------------
+
+// Step 1: Google Login
+router.get(
+  "/login",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  })
+);
+
+// Step 2: Google Callback
+router.get(
+  "/callback",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:8080/login",
+    session: false,
+  }),
+  (req, res) => {
+    const { user, token } = req.user;
+
+    const redirectURL =
+      `http://localhost:8080/auth/success?token=${token}` +
+      `&email=${user.email}` +
+      `&name=${user.name}` +
+      `&picture=${user.picture}`;
+
+    return res.redirect(redirectURL);
   }
-});
+);
 
 module.exports = router;

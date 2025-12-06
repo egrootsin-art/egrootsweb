@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  setAuthData: (data: { token: string; user: any }) => void;  // ⭐ Added
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // 🔹 LOGIN
+  // LOGIN
   const login = async (email: string, password: string): Promise<boolean> => {
     const res = await loginUser(email, password);
 
@@ -44,11 +45,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(res.user);
       return true;
     }
-
     return false;
   };
 
-  // 🔹 SIGNUP (Now saves new user to backend)
+  // SIGNUP
   const signup = async (name: string, email: string, password: string): Promise<boolean> => {
     const res = await signupUser(name, email, password);
 
@@ -59,7 +59,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(res.user);
       return true;
     }
-
     return false;
   };
 
@@ -70,6 +69,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   };
 
+  // ⭐ GOOGLE LOGIN SUPPORT
+  const setAuthData = (data: { token: string; user: any }) => {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    axios.defaults.headers.common["Authorization"] = `Bearer data.token`;
+    setUser(data.user);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -78,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         signup,
         logout,
+        setAuthData, // ⭐ Export it
       }}
     >
       {children}
