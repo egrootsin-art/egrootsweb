@@ -11,6 +11,8 @@ const authRoutes = require("./routes/authRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const googleAuthRoutes = require("./routes/googleAuthRoutes");
+const otpRoutes = require("./routes/otpRoutes");
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -57,6 +59,8 @@ app.get("/", (req, res) => res.send("API is running..."));
 app.use("/api/auth", authRoutes);
 app.use("/api/auth/google", googleAuthRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/otp", otpRoutes);
+
 console.log("Payment Routes Loaded at /api/payment");
 
 app.use("/api/orders", orderRoutes);

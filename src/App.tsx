@@ -8,6 +8,7 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
+
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Index from "./pages/Index";
@@ -19,6 +20,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
+import VerifyOTP from "./pages/VerifyOtp";
 
 // Google Auth callback
 import AuthSuccess from "./pages/AuthSuccess";
@@ -44,7 +46,7 @@ const AppRoutes = () => {
       <Route path="/products" element={<Products />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
-
+      <Route path="/verify-otp" element={<VerifyOTP />} />
       {/* ⭐ PROTECTED ROUTES - Require login */}
       <Route
         path="/home"

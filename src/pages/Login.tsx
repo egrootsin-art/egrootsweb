@@ -3,6 +3,7 @@ import { Eye, EyeOff, Mail, Lock, User, Chrome } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { signupUser } from "@/api/auth";
+import { sendOtp } from "@/api/auth";
 
 interface FormData {
   email: string;
@@ -85,45 +86,51 @@ const Login: React.FC = () => {
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      let success = false;
+  try {
+    let success = false;
 
-      if (isLogin) {
-        success = await login(formData.email, formData.password);
+    if (isLogin) {
+      // ✅ LOGIN FLOW (unchanged)
+      success = await login(formData.email, formData.password);
+    } else {
+      // ✅ NEW: OTP FLOW FOR SIGN UP
+      const res = await sendOtp(formData.email);
+
+      if (res.message && !res.error) {
+        // Navigate to OTP page with data
+        navigate("/verify-otp", {
+          state: {
+            fullName: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          },
+        });
+        return; // Stop here, no login yet
       } else {
-        const response = await signupUser(
-          formData.fullName!,
-          formData.email,
-          formData.password
-        );
-
-        if (!response?.error && response.token && response.user) {
-          localStorage.setItem("token", response.token);
-          localStorage.setItem("user", JSON.stringify(response.user));
-          success = true;
-        }
+        setErrors({ general: res.error || "Failed to send OTP" });
       }
-
-      if (success) {
-        if (formData.email === "admin@egroots.com") {
-          navigate("/admindashboard");
-        } else {
-          navigate("/");
-        }
-      } else {
-        setErrors({ general: "Invalid credentials" });
-      }
-    } catch {
-      setErrors({ general: "Something went wrong" });
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    // Only for login
+    if (success && isLogin) {
+      if (formData.email === "admin@egroots.com") {
+        navigate("/admindashboard");
+      } else {
+        navigate("/");
+      }
+    }
+  } catch {
+    setErrors({ general: "Something went wrong" });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">

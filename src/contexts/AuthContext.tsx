@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    axios.defaults.headers.common["Authorization"] = `Bearer data.token`;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
     setUser(data.user);
   };
 
