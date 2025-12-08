@@ -1,77 +1,78 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CartItem } from './CartContext';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import axios from "axios";
 
 export interface Order {
-  id: string;
-  items: CartItem[];
-  total: number;
-  paymentMethod: string;
-  paymentStatus: 'pending' | 'completed' | 'failed' | 'cancelled';
-  orderDate: string;
-  customerInfo?: {
+  _id: string;
+  customer: {
     name: string;
     email: string;
     phone: string;
     address: string;
   };
+  items: any[];
+  totalAmount: number;
+  paymentMethod: string;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  createdAt: string;
 }
 
 interface OrderContextType {
   orders: Order[];
-  createOrder: (orderData: Omit<Order, 'id' | 'orderDate'>) => string;
-  getOrder: (id: string) => Order | undefined;
-  updateOrderStatus: (id: string, status: Order['paymentStatus']) => void;
-  deleteOrder: (id: string) => void;
+  fetchOrders: (email: string) => Promise<void>;
+  refreshOrders: () => Promise<void>;
+  cancelOrder: (orderId: string) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const savedOrders = localStorage.getItem('egroots-orders');
-    return savedOrders ? JSON.parse(savedOrders) : [];
-  });
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [userEmail, setUserEmail] = useState<string>("");
 
-  const createOrder = (orderData: Omit<Order, 'id' | 'orderDate'>) => {
-    const orderId = `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newOrder: Order = {
-      ...orderData,
-      id: orderId,
-      orderDate: new Date().toISOString(),
-    };
-
-    const updatedOrders = [...orders, newOrder];
-    setOrders(updatedOrders);
-    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
-    
-    return orderId;
+  // Fetch orders for logged email
+  const fetchOrders = async (email: string) => {
+    try {
+      setUserEmail(email);
+      const res = await axios.get(`http://localhost:5000/api/orders/user/${email}`);
+      setOrders(res.data.orders);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    }
   };
 
-  const getOrder = (id: string) => {
-    return orders.find(order => order.id === id);
+  const refreshOrders = async () => {
+    if (!userEmail) return;
+    await fetchOrders(userEmail);
   };
 
-  const updateOrderStatus = (id: string, status: Order['paymentStatus']) => {
-    const updatedOrders = orders.map(order =>
-      order.id === id ? { ...order, paymentStatus: status } : order
-    );
-    setOrders(updatedOrders);
-    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
+  // Cancel order
+  const cancelOrder = async (orderId: string) => {
+    try {
+      await axios.put(`http://localhost:5000/api/orders/${orderId}/cancel`);
+      await refreshOrders();
+    } catch (err) {
+      console.error("Cancel failed:", err);
+    }
   };
 
-  const deleteOrder = (id: string) => {
-    const updatedOrders = orders.filter(order => order.id !== id);
-    setOrders(updatedOrders);
-    localStorage.setItem('egroots-orders', JSON.stringify(updatedOrders));
+  // Delete order
+  const deleteOrder = async (orderId: string) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+      await refreshOrders();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   return (
     <OrderContext.Provider
       value={{
         orders,
-        createOrder,
-        getOrder,
-        updateOrderStatus,
+        fetchOrders,
+        refreshOrders,
+        cancelOrder,
         deleteOrder,
       }}
     >
@@ -83,7 +84,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 export const useOrder = () => {
   const context = useContext(OrderContext);
   if (context === undefined) {
-    throw new Error('useOrder must be used within an OrderProvider');
+    throw new Error("useOrder must be used within an OrderProvider");
   }
   return context;
 };

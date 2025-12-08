@@ -20,7 +20,7 @@ declare global {
 const Order = () => {
   const navigate = useNavigate();
   const { items, total, clearCart } = useCart();
-  const { createOrder } = useOrder();
+const { refreshOrders } = useOrder();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 

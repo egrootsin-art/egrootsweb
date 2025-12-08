@@ -15,25 +15,19 @@ const googleAuthRoutes = require("./routes/googleAuthRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ----------------------
-// MIDDLEWARE
-// ----------------------
 app.use(express.json());
 
-// SESSION (REQUIRED FOR GOOGLE LOGIN)
+// SESSION
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "supersecretkey",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: false, // true only if using HTTPS
-      httpOnly: true,
-    },
+    cookie: { secure: false, httpOnly: true },
   })
 );
 
-// PASSPORT INITIALIZE + SESSION
+// PASSPORT
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -47,9 +41,7 @@ app.use(
 
 app.options("*", cors());
 
-// ----------------------
 // DATABASE
-// ----------------------
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
@@ -58,46 +50,29 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ MongoDB Error:", err));
 
-// ----------------------
 // BASE ROUTE
-// ----------------------
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+app.get("/", (req, res) => res.send("API is running..."));
 
-// ----------------------
 // ROUTES
-// ----------------------
-
-// EMAIL + PASSWORD AUTH
 app.use("/api/auth", authRoutes);
-
-// GOOGLE AUTH  (IMPORTANT)
 app.use("/api/auth/google", googleAuthRoutes);
+app.use("/api/payment", paymentRoutes);
+console.log("Payment Routes Loaded at /api/payment");
 
-// PAYMENTS
-app.use("/api", paymentRoutes);
-
-// ORDERS
 app.use("/api/orders", orderRoutes);
 
-// ----------------------
-// EMAIL SENDER (ORDER CONFIRMATION)
-// ----------------------
+// EMAIL SENDER
 app.post("/api/send-order-email", async (req, res) => {
   try {
     const { customerInfo, items, total, paymentMethod } = req.body;
 
-    if (!customerInfo?.email || !items || !total || !paymentMethod) {
+    if (!customerInfo?.email || !items || !total) {
       return res.status(400).json({ message: "Missing order details" });
     }
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
 
     const itemsList = items
@@ -109,7 +84,7 @@ app.post("/api/send-order-email", async (req, res) => {
       )
       .join("\n");
 
-    const mailOptions = {
+    await transporter.sendMail({
       from: `"Your Shop" <${process.env.EMAIL_USER}>`,
       to: customerInfo.email,
       subject: "Order Confirmation",
@@ -128,9 +103,7 @@ Payment Method: ${paymentMethod}
 Regards,
 Egroots Innovate
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 
     res.json({ message: "Order confirmation sent successfully" });
   } catch (err) {
@@ -139,16 +112,8 @@ Egroots Innovate
   }
 });
 
-// ----------------------
-// 404 HANDLER
-// ----------------------
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+// 404
+app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
-// ----------------------
-// START SERVER
-// ----------------------
-app.listen(PORT, () =>
-  console.log(`🚀 Server running at http://localhost:${PORT}`)
-);
+// SERVER
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

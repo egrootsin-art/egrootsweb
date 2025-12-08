@@ -42,6 +42,30 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+// ===============================
+// 📌 GET USER ORDERS (MyOrders page)
+// ===============================
+router.get("/user/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const orders = await Order.find({
+      "customer.email": email,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 // ===============================
 // 🔄 UPDATE ORDER STATUS
 // ===============================
