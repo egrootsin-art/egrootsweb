@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, Calendar, CreditCard, ShoppingBag, Trash2, X } from "lucide-react";
+import { Package, Calendar, CreditCard, ShoppingBag, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -43,10 +43,6 @@ const MyOrders = () => {
           prev.map((o) => (o._id === id ? { ...o, status: "cancelled" } : o))
         );
       });
-  };
-
-  const deleteOrder = (id: string) => {
-    setOrders((prev) => prev.filter((o) => o._id !== id));
   };
 
   const formatDate = (dateString: string) => {
@@ -132,7 +128,8 @@ const MyOrders = () => {
                       {order.status.toUpperCase()}
                     </Badge>
 
-                    {order.status === "pending" ? (
+                    {/* ✅ ONLY SHOW CANCEL BUTTON FOR PENDING ORDERS */}
+                    {order.status === "pending" && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="sm">
@@ -154,32 +151,6 @@ const MyOrders = () => {
                               onClick={() => cancelOrder(order._id)}
                             >
                               Yes, Cancel
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    ) : (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Order?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>No</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-white"
-                              onClick={() => deleteOrder(order._id)}
-                            >
-                              Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -239,10 +210,18 @@ const MyOrders = () => {
 
                 <div className="mt-4 p-3 rounded-lg bg-muted/20 border">
                   <h5 className="font-medium mb-2">Delivery Information</h5>
-                  <p className="text-sm"><strong>Name:</strong> {order.customer.name}</p>
-                  <p className="text-sm"><strong>Email:</strong> {order.customer.email}</p>
-                  <p className="text-sm"><strong>Phone:</strong> {order.customer.phone}</p>
-                  <p className="text-sm"><strong>Address:</strong> {order.customer.address}</p>
+                  <p className="text-sm">
+                    <strong>Name:</strong> {order.customer.name}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Email:</strong> {order.customer.email}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Phone:</strong> {order.customer.phone}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Address:</strong> {order.customer.address}
+                  </p>
                 </div>
               </CardContent>
             </Card>

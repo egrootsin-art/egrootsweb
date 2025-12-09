@@ -136,7 +136,7 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl">
 
-        <h2 className="text-3xl font-bold text-white text-center mb-1">
+       <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-1">
           {isLogin ? "Welcome Back" : "Create Account"}
         </h2>
 

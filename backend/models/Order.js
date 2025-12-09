@@ -10,10 +10,13 @@ const OrderSchema = new mongoose.Schema(
     },
     items: [
       {
-        _id: false,   // <-- FIX: Prevent Mongoose from expecting ObjectId
+        _id: false, // Prevent Mongoose from auto-creating _id for sub-documents
+        id: String, // ✅ Product ID
         name: String,
         quantity: Number,
         price: Number,
+        category: String, // ✅ Added category
+        image: String, // ✅ Added image URL
       },
     ],
     totalAmount: Number,
@@ -24,7 +27,7 @@ const OrderSchema = new mongoose.Schema(
     status: {
       type: String,
       default: "Pending",
-      enum: ["Pending", "Processing", "Completed"],
+      enum: ["Pending", "Processing", "Completed", "Cancelled"], // ✅ Added Cancelled
     },
   },
   { timestamps: true }

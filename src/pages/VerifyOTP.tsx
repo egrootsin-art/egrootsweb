@@ -183,7 +183,7 @@ const VerifyOTP: React.FC = () => {
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
-                className="w-12 h-12 text-center text-xl font-semibold bg-black/40 text-white border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-14 h-14 sm:w-12 sm:h-12 text-center text-xl font-semibold bg-black/40 text-white border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 autoFocus={index === 0}
               />
             ))}
