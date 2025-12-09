@@ -8,11 +8,11 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail"; // ✅ Import ProductDetail
 import Cart from "./pages/Cart";
 import Order from "./pages/Order";
 import MyOrders from "./pages/MyOrders";
@@ -44,9 +44,11 @@ const AppRoutes = () => {
       {/* ⭐ PUBLIC ROUTES - No login needed */}
       <Route path="/" element={<Index />} />
       <Route path="/products" element={<Products />} />
+      <Route path="/product/:id" element={<ProductDetail />} /> {/* ✅ Product Detail Route */}
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/verify-otp" element={<VerifyOTP />} />
+
       {/* ⭐ PROTECTED ROUTES - Require login */}
       <Route
         path="/home"

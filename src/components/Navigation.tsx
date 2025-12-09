@@ -6,7 +6,6 @@ import { useCart } from "@/contexts/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/logo.png";
 
-
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,10 +13,10 @@ const Navigation = () => {
   const navigate = useNavigate();
   
   const categories = [
-    "3D Printing Kits",
-    "PCB Design Services", 
-    "Educational Kits",
-    "Competition Robots"
+    { name: "3D Printing Kits", value: "3D Printing Kits" },
+    { name: "PCB Design Services", value: "PCB Design Services" },
+    { name: "Educational Kits", value: "Educational Kits" },
+    { name: "Competition Robots", value: "Competition Robots" }
   ];
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
@@ -29,6 +28,12 @@ const Navigation = () => {
     } else {
       navigate('/products');
     }
+  };
+
+  // ✅ Handle category click
+  const handleCategoryClick = (categoryValue: string) => {
+    navigate(`/products?category=${encodeURIComponent(categoryValue)}`);
+    setIsMenuOpen(false); // Close mobile menu
   };
 
   return (
@@ -56,16 +61,25 @@ const Navigation = () => {
               <button className="text-black hover:text-blue-600 transition-colors">
                 Products
               </button>
+              {/* ✅ Updated Dropdown with Category Filtering */}
               <div className="absolute top-full left-0 mt-2 w-48 glass rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                 <div className="p-2">
+                  {/* All Products Option */}
+                  <button
+                    onClick={() => navigate('/products')}
+                    className="block w-full text-left px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                  >
+                    All Products
+                  </button>
+                  {/* Category Options */}
                   {categories.map((category) => (
-                    <Link
-                      key={category}
-                      to="/products"
-                      className="block px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                    <button
+                      key={category.value}
+                      onClick={() => handleCategoryClick(category.value)}
+                      className="block w-full text-left px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
                     >
-                      {category}
-                    </Link>
+                      {category.name}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -138,31 +152,62 @@ const Navigation = () => {
             </form>
             
             <div className="space-y-2">
-              <Link to="/" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link 
+                to="/" 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-foreground hover:text-primary transition-colors py-2"
+              >
                 Home
               </Link>
               <div className="space-y-1">
                 <p className="text-primary font-medium py-2">Products</p>
+                {/* ✅ All Products Option */}
+                <button
+                  onClick={() => {
+                    navigate('/products');
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
+                >
+                  All Products
+                </button>
+                {/* ✅ Category Options */}
                 {categories.map((category) => (
-                  <Link
-                    key={category}
-                    to="/products"
-                    className="block text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
+                  <button
+                    key={category.value}
+                    onClick={() => handleCategoryClick(category.value)}
+                    className="block w-full text-left text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
                   >
-                    {category}
-                  </Link>
+                    {category.name}
+                  </button>
                 ))}
               </div>
-              <Link to="/about" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link 
+                to="/about" 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-foreground hover:text-primary transition-colors py-2"
+              >
                 About
               </Link>
-              <Link to="/contact" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link 
+                to="/contact" 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-foreground hover:text-primary transition-colors py-2"
+              >
                 Contact
               </Link>
-              <Link to="/my-orders" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link 
+                to="/my-orders" 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-foreground hover:text-primary transition-colors py-2"
+              >
                 My Orders
               </Link>
-              <Link to="/home" className="block text-foreground hover:text-primary transition-colors py-2">
+              <Link 
+                to="/home" 
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-foreground hover:text-primary transition-colors py-2"
+              >
                 Dashboard
               </Link>
             </div>

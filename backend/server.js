@@ -4,20 +4,23 @@ const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 require("dotenv").config();
-
-// ROUTES
-const authRoutes = require("./routes/authRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const googleAuthRoutes = require("./routes/googleAuthRoutes");
-const otpRoutes = require("./routes/otpRoutes");
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// MIDDLEWARE - MUST BE FIRST
 app.use(express.json());
+
+// CORS
+app.use(
+  cors({
+    origin: "http://localhost:8080",
+    credentials: true,
+  })
+);
 
 // SESSION
 app.use(
@@ -33,16 +36,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// CORS
-app.use(
-  cors({
-    origin: "http://localhost:8080",
-    credentials: true,
-  })
-);
-
-app.options("*", cors());
-
 // DATABASE
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -55,21 +48,76 @@ mongoose
 // BASE ROUTE
 app.get("/", (req, res) => res.send("API is running..."));
 
-// ROUTES
+// ✅ RAZORPAY ROUTES (INLINE - NO EXTERNAL FILE)
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// Get Razorpay Key
+app.get("/api/payment/get-key", (req, res) => {
+  console.log("✅ GET /api/payment/get-key called");
+  res.json({ key: process.env.RAZORPAY_KEY_ID });
+});
+
+// Create Order
+app.post("/api/payment/create-order", async (req, res) => {
+  console.log("✅ POST /api/payment/create-order called");
+  try {
+    const { amount } = req.body;
+    const order = await razorpay.orders.create({
+      amount: amount,
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
+    res.json({
+      success: true,
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    });
+  } catch (err) {
+    console.error("❌ Order error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verify Payment
+app.post("/api/payment/verify", (req, res) => {
+  console.log("✅ POST /api/payment/verify called");
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ success: false });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// OTHER ROUTES
+const authRoutes = require("./routes/authRoutes");
+const googleAuthRoutes = require("./routes/googleAuthRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const otpRoutes = require("./routes/otpRoutes");
+
 app.use("/api/auth", authRoutes);
 app.use("/api/auth/google", googleAuthRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/otp", otpRoutes);
 
-console.log("Payment Routes Loaded at /api/payment");
-
-app.use("/api/orders", orderRoutes);
-
-// EMAIL SENDER
+// EMAIL
 app.post("/api/send-order-email", async (req, res) => {
   try {
     const { customerInfo, items, total, paymentMethod } = req.body;
-
     if (!customerInfo?.email || !items || !total) {
       return res.status(400).json({ message: "Missing order details" });
     }
@@ -80,44 +128,31 @@ app.post("/api/send-order-email", async (req, res) => {
     });
 
     const itemsList = items
-      .map(
-        (item) =>
-          `${item.name} - Qty: ${item.quantity} - ₹${(
-            item.price * item.quantity
-          ).toFixed(2)}`
-      )
+      .map((item) => `${item.name} - Qty: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`)
       .join("\n");
 
     await transporter.sendMail({
-      from: `"Your Shop" <${process.env.EMAIL_USER}>`,
+      from: `"E-Groots" <${process.env.EMAIL_USER}>`,
       to: customerInfo.email,
       subject: "Order Confirmation",
-      text: `
-Hello ${customerInfo.name},
-
-Thank you for shopping with us!
-
-Order Summary:
----------------------------------
-${itemsList}
-
-Total: ₹${total.toFixed(2)}
-Payment Method: ${paymentMethod}
-
-Regards,
-Egroots Innovate
-      `,
+      text: `Hello ${customerInfo.name},\n\nThank you for shopping!\n\n${itemsList}\n\nTotal: ₹${total.toFixed(2)}\nPayment: ${paymentMethod}`,
     });
 
-    res.json({ message: "Order confirmation sent successfully" });
+    res.json({ message: "Email sent" });
   } catch (err) {
-    console.error("Email Sending Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 // 404
-app.use((req, res) => res.status(404).json({ message: "Route not found" }));
+app.use((req, res) => {
+  console.log("❌ 404:", req.method, req.path);
+  res.status(404).json({ message: "Route not found" });
+});
 
-// SERVER
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+// START
+app.listen(PORT, () => {
+  console.log(`\n🚀 Server: http://localhost:${PORT}`);
+  console.log(`✅ Payment routes loaded (inline)`);
+  console.log(`🧪 Test: http://localhost:${PORT}/api/payment/get-key\n`);
+});

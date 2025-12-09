@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export interface Product {
   id: string;
@@ -27,8 +28,17 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  // ✅ Navigate to product detail page
+  const handleProductClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  // ✅ Add to cart without navigating
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
     if (!product.inStock) return;
     
     addItem({
@@ -40,9 +50,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
 
     toast({
-      title: "Added to cart!",
+      title: "Added to cart! 🛒",
       description: `${product.name} has been added to your cart.`,
     });
+  };
+
+  // ✅ Quick view without navigating
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    navigate(`/product/${product.id}`);
   };
 
   const discountPercent = product.originalPrice 
@@ -50,7 +66,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
     : 0;
 
   return (
-    <Card className="group relative tech-hover gradient-card border-border/50 overflow-hidden">
+    <Card 
+      className="group relative tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer"
+      onClick={handleProductClick}
+    >
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
         {product.isNew && (
@@ -87,9 +106,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           
-          {/* Hover Overlay */}
+          {/* Hover Overlay with Quick View */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <Button size="sm" variant="secondary" className="tech-hover">
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              className="tech-hover"
+              onClick={handleQuickView}
+            >
               <Eye className="w-4 h-4 mr-2" />
               Quick View
             </Button>
@@ -134,11 +158,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {/* Price */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl font-bold text-primary">
-            ${product.price}
+            ₹{product.price}
           </span>
           {product.originalPrice && (
             <span className="text-lg text-muted-foreground line-through">
-              ${product.originalPrice}
+              ₹{product.originalPrice}
             </span>
           )}
         </div>

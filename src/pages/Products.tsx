@@ -16,12 +16,38 @@ const Products = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("featured");
 
+  // ✅ Handle URL parameters for search and category
   useEffect(() => {
     const searchParam = searchParams.get("search");
+    const categoryParam = searchParams.get("category");
+    
     if (searchParam) {
       setSearchTerm(searchParam);
     }
+    
+    // ✅ Set category from URL parameter
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    } else {
+      setSelectedCategory("all");
+    }
   }, [searchParams]);
+
+  // ✅ Handle category change and update URL
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    
+    // Update URL parameter
+    const newSearchParams = new URLSearchParams(searchParams);
+    
+    if (category === "all") {
+      newSearchParams.delete("category");
+    } else {
+      newSearchParams.set("category", category);
+    }
+    
+    setSearchParams(newSearchParams);
+  };
 
   // Filter products based on search and category
   const filteredProducts = featuredProducts.filter(product => {
@@ -71,7 +97,7 @@ const Products = () => {
           <div className="flex flex-wrap gap-4 justify-center">
             <Button
               variant={selectedCategory === "all" ? "default" : "outline"}
-              onClick={() => setSelectedCategory("all")}
+              onClick={() => handleCategoryChange("all")}
               className="tech-hover"
             >
               All Products
@@ -80,7 +106,7 @@ const Products = () => {
               <Button
                 key={category.name}
                 variant={selectedCategory === category.name ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category.name)}
+                onClick={() => handleCategoryChange(category.name)}
                 className="tech-hover"
               >
                 {category.name}
@@ -140,15 +166,27 @@ const Products = () => {
             </div>
           </div>
 
+          {/* ✅ Results Info with Active Filter Badge */}
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {sortedProducts.length} of {featuredProducts.length} products
-            </p>
-            {selectedCategory !== "all" && (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">
+                Showing {sortedProducts.length} of {featuredProducts.length} products
+              </p>
+              {selectedCategory !== "all" && (
+                <Badge variant="default" className="bg-primary">
+                  {selectedCategory}
+                </Badge>
+              )}
+            </div>
+            {(selectedCategory !== "all" || searchTerm) && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSelectedCategory("all")}
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setSearchTerm("");
+                  setSearchParams({});
+                }}
                 className="text-primary hover:text-primary/80"
               >
                 Clear filters
@@ -172,7 +210,7 @@ const Products = () => {
               </p>
               <Button onClick={() => {
                 setSearchTerm("");
-                setSelectedCategory("all");
+                handleCategoryChange("all");
               }}>
                 Clear all filters
               </Button>
@@ -218,7 +256,7 @@ const Products = () => {
                 {categories.map((category) => (
                   <li key={category.name}>
                     <button 
-                      onClick={() => setSelectedCategory(category.name)}
+                      onClick={() => handleCategoryChange(category.name)}
                       className="hover:text-primary transition-colors text-left"
                     >
                       {category.name}
