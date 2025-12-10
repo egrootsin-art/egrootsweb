@@ -118,7 +118,7 @@ const Login: React.FC = () => {
 
     // Only for login
     if (success && isLogin) {
-      if (formData.email === "admin@egroots.com") {
+      if (formData.email === "bharanidharan7502@gmail.com") {
         navigate("/admindashboard");
       } else {
         navigate("/");

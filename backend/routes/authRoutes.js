@@ -93,11 +93,11 @@ router.post("/login", async (req, res) => {
 // -------------------------------------------
 router.post("/create-admin", async (req, res) => {
   try {
-    const hashedPassword = await bcrypt.hash("Admin@123", 10);
+    const hashedPassword = await bcrypt.hash("123456", 10);
 
     const admin = new User({
-      name: "Admin",
-      email: "admin@egroots.com",
+      name: "BHARANIDHARAN S",
+      email: "bharanidharan7502@gmail.com",
       password: hashedPassword,
     });
 

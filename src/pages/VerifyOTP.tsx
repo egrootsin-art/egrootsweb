@@ -92,7 +92,7 @@ const VerifyOTP: React.FC = () => {
         setAuthData({ token: res.token, user: res.user });
 
         // Redirect based on email
-        if (email === "admin@egroots.com") {
+        if (email === "bharanidharan7502@gmail.com") {
           navigate("/admindashboard");
         } else {
           navigate("/");

@@ -144,46 +144,48 @@ export default function AdminDashboard() {
   }, []);
 
   // ------------------ CALCULATE STATS ------------------
-  const calculateStats = (orderList: Order[]) => {
-    const totalRevenue = orderList.reduce(
+const calculateStats = (orderList: Order[]) => {
+  // ✅ 1. Exclude cancelled orders from revenue
+  const totalRevenue = orderList
+    .filter((o) => o.status?.toLowerCase() !== "cancelled")
+    .reduce(
       (sum, order) => sum + (Number(order.totalAmount) || 0),
       0
     );
-    
-    const pendingOrders = orderList.filter(
-      (o) => o.status?.toLowerCase() === "pending"
-    ).length;
-    
-    const processingOrders = orderList.filter(
-      (o) => o.status?.toLowerCase() === "processing"
-    ).length;
-    
-    const completedOrders = orderList.filter(
-      (o) => o.status?.toLowerCase() === "completed"
-    ).length;
 
-    const cancelledOrders = orderList.filter(
-      (o) => o.status?.toLowerCase() === "cancelled"
-    ).length;
+  // You can keep totalOrders as all orders,
+  // or also exclude cancelled if you prefer:
+  const totalOrders = orderList.length;
+  // const totalOrders = orderList.filter(
+  //   (o) => o.status?.toLowerCase() !== "cancelled"
+  // ).length;
 
-    console.log("📈 Stats calculated:", {
-      totalOrders: orderList.length,
-      totalRevenue,
-      pendingOrders,
-      processingOrders,
-      completedOrders,
-      cancelledOrders,
-    });
+  const pendingOrders = orderList.filter(
+    (o) => o.status?.toLowerCase() === "pending"
+  ).length;
 
-    setStats({
-      totalOrders: orderList.length,
-      totalRevenue,
-      pendingOrders,
-      processingOrders,
-      completedOrders,
-      cancelledOrders,
-    });
-  };
+  const processingOrders = orderList.filter(
+    (o) => o.status?.toLowerCase() === "processing"
+  ).length;
+
+  const completedOrders = orderList.filter(
+    (o) => o.status?.toLowerCase() === "completed"
+  ).length;
+
+  const cancelledOrders = orderList.filter(
+    (o) => o.status?.toLowerCase() === "cancelled"
+  ).length;
+
+  setStats({
+    totalOrders,
+    totalRevenue,
+    pendingOrders,
+    processingOrders,
+    completedOrders,
+    cancelledOrders,
+  });
+};
+
 
   // ------------------ SEARCH & FILTER ------------------
   useEffect(() => {
@@ -219,39 +221,56 @@ export default function AdminDashboard() {
   };
 
   // ------------------ TOGGLE STATUS ------------------
-  const handleToggleStatus = async (orderId: string, currentStatus: string) => {
-    let newStatus = currentStatus;
+const handleToggleStatus = async (orderId: string, currentStatus: string) => {
+  let newStatus = currentStatus;
 
-    if (currentStatus.toLowerCase() === "pending") newStatus = "Processing";
-    else if (currentStatus.toLowerCase() === "processing") newStatus = "Completed";
-    else return;
+  if (currentStatus.toLowerCase() === "pending") newStatus = "Processing";
+  else if (currentStatus.toLowerCase() === "processing") newStatus = "Completed";
+  else return;
 
-    try {
-      const res = await axios.put(
-        `http://localhost:5000/api/orders/update-status/${orderId}`,
-        { status: newStatus }
-      );
+  try {
+    const res = await axios.put(
+      `http://localhost:5000/api/orders/update-status/${orderId}`,
+      { status: newStatus }
+    );
 
-      const updatedOrders = orders.map((order) =>
-        order._id === orderId ? res.data.order : order
-      );
-      setOrders(updatedOrders);
-      setFilteredOrders(updatedOrders);
-      calculateStats(updatedOrders);
+    const updatedOrders = orders.map((order) =>
+      order._id === orderId ? res.data.order : order
+    );
+    setOrders(updatedOrders);
+    setFilteredOrders(updatedOrders);
+    calculateStats(updatedOrders);
 
-      toast({
-        title: "Status Updated ✅",
-        description: `Order status changed to ${newStatus}`,
-      });
-    } catch (err) {
-      console.error("Status update failed:", err);
-      toast({
-        title: "Update Failed",
-        description: "Unable to update order status",
-        variant: "destructive",
-      });
+    // ✅ SEND SHIPMENT CONFIRMATION EMAIL when status becomes "Completed"
+    if (newStatus.toLowerCase() === "completed") {
+      try {
+        await axios.post("http://localhost:5000/api/send-shipment-email", {
+          customerInfo: res.data.order.customer,
+          items: res.data.order.items,
+          total: res.data.order.totalAmount,
+          orderId: res.data.order._id,
+          trackingId: `TRK${res.data.order._id.slice(-6).toUpperCase()}`, // Optional tracking ID
+        });
+      } catch (emailErr) {
+        console.error("Shipment email failed:", emailErr);
+        // Don't fail the status update if email fails
+      }
     }
-  };
+
+    toast({
+      title: "Status Updated ✅",
+      description: `Order status changed to ${newStatus}`,
+    });
+  } catch (err) {
+    console.error("Status update failed:", err);
+    toast({
+      title: "Update Failed",
+      description: "Unable to update order status",
+      variant: "destructive",
+    });
+  }
+};
+
 
   // ------------------ CANCEL ORDER ------------------
   const handleCancelOrder = async () => {

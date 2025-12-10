@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { featuredProducts } from "@/data/products";
@@ -18,20 +20,38 @@ import {
   Plus,
   Minus,
   Check,
-  Info,
   Eye,
+  User,
 } from "lucide-react";
 
+interface Review {
+  id: string;
+  _id?: string;
+  productId: string;
+  user: string;
+  rating: number;
+  comment?: string;
+  date: string;
+  verified: boolean;
+}
+
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addItem, items } = useCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [itemAdded, setItemAdded] = useState(false);
 
-  // Find product by ID
-  const product = featuredProducts.find((p) => p.id === id);
+  // ✅ MONGODB REVIEWS STATES
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [currentRating, setCurrentRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  const product = featuredProducts.find((p: any) => p.id === id);
 
   if (!product) {
     return (
@@ -39,9 +59,6 @@ const ProductDetail = () => {
         <Navigation />
         <div className="container mx-auto px-4 py-20 text-center">
           <h2 className="text-3xl font-bold mb-4">Product Not Found</h2>
-          <p className="text-muted-foreground mb-6">
-            The product you're looking for doesn't exist.
-          </p>
           <Button onClick={() => navigate("/products")}>
             <ArrowLeft className="mr-2 w-4 h-4" />
             Back to Products
@@ -51,15 +68,69 @@ const ProductDetail = () => {
     );
   }
 
-  // Calculate discount percentage
-  const discountPercent = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const discountPercent = product.originalPrice
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
     : 0;
 
-  // Check if product is already in cart
-  const isInCart = items.some(item => item.id === product.id);
+  const isInCart = items.some((item) => item.id === product.id);
 
-  // Handle Add to Cart
+  // ✅ HYBRID: MongoDB + LocalStorage Fallback
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!id) return;
+
+      try {
+        setLoadingReviews(true);
+        console.log(`📊 Fetching reviews for: ${id}`);
+
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:5000/api/products/${id}/reviews`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        console.log("✅ MongoDB Reviews loaded:", response.data.reviews);
+        setReviews(response.data.reviews || []);
+
+        localStorage.setItem(
+          `reviews_${id}`,
+          JSON.stringify(response.data.reviews || [])
+        );
+      } catch (error: any) {
+        console.error("❌ MongoDB failed:", error.response?.status);
+
+        const cachedReviews = localStorage.getItem(`reviews_${id}`);
+        if (cachedReviews) {
+          console.log("✅ Using cached reviews:", JSON.parse(cachedReviews));
+          setReviews(JSON.parse(cachedReviews));
+        } else {
+          setReviews([]);
+        }
+
+        toast({
+          title: "Reviews unavailable",
+          description:
+            error.response?.status === 404
+              ? "No reviews endpoint yet, using local cache"
+              : "Showing cached reviews",
+        });
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [id, toast]);
+
+  // Rating handlers
+  const handleRatingHover = (rating: number) => setHoverRating(rating);
+  const handleRatingLeave = () => currentRating === 0 && setHoverRating(0);
+  const handleRatingClick = (rating: number) => setCurrentRating(rating);
+
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
       addItem({
@@ -73,16 +144,96 @@ const ProductDetail = () => {
     setItemAdded(true);
     toast({
       title: "Added to Cart! 🛒",
-      description: `${quantity}x ${product.name} added to your cart`,
+      description: `${quantity}x ${product.name} added`,
     });
   };
+
+  // ✅ SAVE REVIEW TO MONGODB
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentRating || !reviewText.trim()) {
+      toast({
+        title: "Please select rating and write a review",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Please login to submit a review",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reviewData = {
+        rating: currentRating,
+        comment: reviewText,
+      };
+
+      console.log("📝 Submitting review:", reviewData);
+
+      const response = await axios.post(
+        `http://localhost:5000/api/products/${id}/reviews`,
+        reviewData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const newReview: Review = {
+        id: response.data.review._id || Date.now().toString(),
+        _id: response.data.review._id,
+        productId: id!,
+        user:
+          response.data.review.username ||
+          response.data.review.user ||
+          "Anonymous",
+        rating: currentRating,
+        comment: reviewText,
+        date:
+          response.data.review.date ||
+          new Date().toLocaleDateString("en-IN"),
+        verified: false,
+      };
+
+      setReviews([newReview, ...reviews]);
+
+      setReviewText("");
+      setCurrentRating(0);
+
+      toast({
+        title: "Review Submitted! 🎉",
+        description: "Thank you for your feedback!",
+      });
+    } catch (error: any) {
+      console.error("❌ Review submission failed:", error);
+      toast({
+        title: "Failed to submit review",
+        description:
+          error.response?.data?.error || "Please login and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const averageRating =
+    reviews.length > 0
+      ? Math.round(
+          (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) *
+            10
+        ) / 10
+      : product.rating || 0;
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-
       <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
+        {/* Breadcrumb & Back */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-primary transition-colors">
             Home
@@ -92,29 +243,16 @@ const ProductDetail = () => {
             Products
           </Link>
           <span>/</span>
-          <Link
-            to={`/products?category=${product.category}`}
-            className="hover:text-primary transition-colors"
-          >
-            {product.category}
-          </Link>
-          <span>/</span>
           <span className="text-foreground">{product.name}</span>
         </div>
 
-        {/* Back Button */}
-        <Button
-          onClick={() => navigate(-1)}
-          variant="ghost"
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 w-4 h-4" />
-          Back
+        <Button onClick={() => navigate(-1)} variant="ghost" className="mb-6">
+          <ArrowLeft className="mr-2 w-4 h-4" /> Back
         </Button>
 
         {/* Product Details Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* ✅ Compact Product Image */}
+          {/* Product Image */}
           <div className="space-y-4">
             <div className="relative w-full h-96 rounded-lg overflow-hidden bg-muted">
               <img
@@ -122,19 +260,16 @@ const ProductDetail = () => {
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
-              {/* Show "New" badge if isNew exists */}
               {product.isNew && (
                 <Badge className="absolute top-4 left-4 bg-green-600">
                   New
                 </Badge>
               )}
-              {/* Show "Featured" badge if isFeatured exists */}
               {product.isFeatured && (
                 <Badge className="absolute top-4 left-20 bg-blue-600">
                   Featured
                 </Badge>
               )}
-              {/* Show discount badge if originalPrice exists */}
               {discountPercent > 0 && (
                 <Badge className="absolute top-4 right-4 bg-red-600">
                   -{discountPercent}% OFF
@@ -143,27 +278,21 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Product Info */}
+          {/* ✅ COMPLETE Product Info */}
           <div className="space-y-6">
-            {/* Category Badge */}
-            <Badge variant="outline" className="text-sm">
-              {product.category}
-            </Badge>
+            <Badge variant="outline">{product.category}</Badge>
 
-            {/* Product Name */}
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">
                 {product.name}
               </h1>
-              
-              {/* Rating */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i < product.rating
+                        i < averageRating
                           ? "text-yellow-500 fill-yellow-500"
                           : "text-gray-300"
                       }`}
@@ -171,8 +300,7 @@ const ProductDetail = () => {
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {product.rating}/5 Rating
-                  {product.reviewCount && ` (${product.reviewCount} reviews)`}
+                  {averageRating}/5 ({reviews.length} reviews)
                 </span>
               </div>
             </div>
@@ -188,7 +316,8 @@ const ProductDetail = () => {
                     ₹{product.originalPrice.toLocaleString()}
                   </span>
                   <Badge className="bg-red-600">
-                    Save ₹{(product.originalPrice - product.price).toLocaleString()}
+                    Save ₹
+                    {(product.originalPrice - product.price).toLocaleString()}
                   </Badge>
                 </>
               )}
@@ -247,7 +376,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* ✅ Action Buttons - Add to Cart + View Cart */}
+            {/* Action Buttons */}
             <div className="space-y-3">
               {!itemAdded && !isInCart ? (
                 <Button
@@ -289,7 +418,11 @@ const ProductDetail = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
                     <Check className="w-5 h-5 text-green-600" />
-                    <span>{product.inStock ? 'In Stock - Ready to Ship' : 'Out of Stock'}</span>
+                    <span>
+                      {product.inStock
+                        ? "In Stock - Ready to Ship"
+                        : "Out of Stock"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <Truck className="w-5 h-5 text-blue-600" />
@@ -309,68 +442,139 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Additional Information */}
+        {/* ✅ REVIEWS SECTION */}
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Product Specifications */}
-          <Card className="border-border/50">
+          {/* Write Review */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-6 h-6 text-yellow-500" />
+                Write Review
+              </CardTitle>
+            </CardHeader>
             <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Info className="w-6 h-6" />
-                Specifications
-              </h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Category</span>
-                  <span className="font-medium">{product.category}</span>
+              <form onSubmit={handleSubmitReview} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Rating *
+                  </label>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => {
+                      const ratingValue = i + 1;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          className={`p-2 rounded-lg transition-all ${
+                            ratingValue <= (hoverRating || currentRating)
+                              ? "bg-yellow-100 text-yellow-600 shadow-md"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                          onClick={() => handleRatingClick(ratingValue)}
+                          onMouseEnter={() => handleRatingHover(ratingValue)}
+                          onMouseLeave={handleRatingLeave}
+                        >
+                          <Star className="w-6 h-6" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {currentRating > 0 && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      Selected: {currentRating} star
+                      {currentRating > 1 ? "s" : ""}
+                    </p>
+                  )}
                 </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Product Code</span>
-                  <span className="font-medium">{product.id.toUpperCase()}</span>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Review *
+                  </label>
+                  <Textarea
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    placeholder="Share your experience with this product..."
+                    rows={4}
+                    required
+                  />
                 </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Availability</span>
-                  <span className={`font-medium ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-muted-foreground">Warranty</span>
-                  <span className="font-medium">1 Year</span>
-                </div>
-              </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={submittingReview || currentRating === 0}
+                >
+                  {submittingReview ? "Submitting..." : "Submit Review"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 
-          {/* Why Buy This */}
-          <Card className="border-border/50">
+          {/* Reviews List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-6 h-6 text-yellow-500" />
+                Reviews ({reviews.length})
+              </CardTitle>
+            </CardHeader>
             <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Why Buy This?</h2>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">
-                    High-quality components and reliable performance
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">
-                    Perfect for learning and educational projects
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">
-                    Comprehensive documentation and tutorials included
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">
-                    Trusted by educators and innovators worldwide
-                  </span>
-                </li>
-              </ul>
+              {loadingReviews ? (
+                <div className="text-center py-8">Loading reviews...</div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-12">
+                  <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No reviews yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {reviews.map((review) => {
+                    const reviewKey = review.id || review._id!;
+
+                    return (
+                      <div
+                        key={reviewKey}
+                        className="p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">
+                                {review.user}
+                              </h4>
+                              <div className="flex items-center gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${
+                                      i < review.rating
+                                        ? "text-yellow-500 fill-yellow-500"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span>{review.date}</span>
+                          </div>
+                        </div>
+
+                        {review.comment && (
+                          <p className="text-sm text-gray-700">
+                            "{review.comment}"
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

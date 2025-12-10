@@ -29,7 +29,7 @@ const AuthSuccess = () => {
     );
 
     // Redirect based on role
-    if (email === "admin@egroots.com") {
+    if (email === "bharanidharan7502@gmail.com") {
       navigate("/admindashboard");
     } else {
       navigate("/");
