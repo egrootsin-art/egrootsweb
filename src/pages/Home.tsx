@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User, ShoppingBag, Package, Award, Mail, Calendar, Settings, ArrowLeft } from 'lucide-react';
+import { LogOut, User, ShoppingBag, Package, Award, Mail, Settings, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -14,8 +14,7 @@ const Home = () => {
   };
 
   // Extract name from email (part before @)
- const userName = user?.name || 'User';
-
+  const userName = user?.name || 'User';
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,19 +77,6 @@ const Home = () => {
                       <p className="font-medium text-foreground">{user?.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Member Since</p>
-                      <p className="font-medium text-foreground">
-                        {new Date().toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </p>
-                    </div>
-                  </div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -103,13 +89,6 @@ const Home = () => {
                           Verified
                         </Badge>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Orders</p>
-                      <p className="font-medium text-foreground">0</p>
                     </div>
                   </div>
                 </div>
@@ -210,4 +189,5 @@ const Home = () => {
     </div>
   );
 };
+
 export default Home;

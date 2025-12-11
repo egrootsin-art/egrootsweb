@@ -22,6 +22,8 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import VerifyOTP from "./pages/VerifyOTP";
 import Terms from "./pages/Terms";
+import EventRegistration from "@/pages/EventRegistration";
+import EventThankYou from "@/pages/EventThankYou";
 
 // Google Auth callback
 import AuthSuccess from "./pages/AuthSuccess";
@@ -50,6 +52,9 @@ const AppRoutes = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/verify-otp" element={<VerifyOTP />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/events/register/:id" element={<EventRegistration />} />
+      <Route path="/events/thank-you/:id" element={<EventThankYou />} />
+      
       {/* ⭐ PROTECTED ROUTES - Require login */}
       <Route
         path="/home"

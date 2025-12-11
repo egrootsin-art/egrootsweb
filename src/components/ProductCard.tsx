@@ -148,16 +148,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button
-          onClick={handleAddToCart}
-          disabled={!product.inStock}
-          className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          {product.inStock ? "Add to Cart" : "Out of Stock"}
-        </Button>
-      </CardFooter>
+  {product.category === "Events" ? (
+    <Button
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate(`/events/register/${product.id}`);
+      }}
+      className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
+    >
+      Register for Event
+    </Button>
+  ) : (
+    <Button
+      onClick={handleAddToCart}
+      disabled={!product.inStock}
+      className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
+    >
+      <ShoppingCart className="w-4 h-4 mr-2" />
+      {product.inStock ? "Add to Cart" : "Out of Stock"}
+    </Button>
+  )}
+</CardFooter>
+
     </Card>
+    
   );
 };
 

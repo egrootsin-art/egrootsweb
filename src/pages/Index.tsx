@@ -183,7 +183,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Products</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">3D Printing Kits</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Events</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Educational Kits</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Competition Robots</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">PCB Design</a></li>

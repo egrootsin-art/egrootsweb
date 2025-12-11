@@ -377,40 +377,50 @@ const ProductDetail = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-3">
-              {!itemAdded && !isInCart ? (
-                <Button
-                  onClick={handleAddToCart}
-                  size="lg"
-                  className="w-full"
-                  disabled={!product.inStock}
-                >
-                  <ShoppingCart className="mr-2 w-5 h-5" />
-                  {product.inStock ? "Add to Cart" : "Out of Stock"}
-                </Button>
-              ) : (
-                <div className="space-y-2">
-                  <Button
-                    onClick={handleAddToCart}
-                    size="lg"
-                    variant="outline"
-                    className="w-full"
-                    disabled={!product.inStock}
-                  >
-                    <Plus className="mr-2 w-5 h-5" />
-                    Add More
-                  </Button>
-                  <Button
-                    onClick={() => navigate("/cart")}
-                    size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700"
-                  >
-                    <Eye className="mr-2 w-5 h-5" />
-                    View Cart
-                  </Button>
-                </div>
-              )}
-            </div>
+            {/* Action Buttons */}
+<div className="space-y-3">
+  {product.category === "Events" ? (
+    <Button
+      size="lg"
+      className="w-full"
+      onClick={() => navigate(`/events/register/${product.id}`)}
+    >
+      Register for Event
+    </Button>
+  ) : !itemAdded && !isInCart ? (
+    <Button
+      onClick={handleAddToCart}
+      size="lg"
+      className="w-full"
+      disabled={!product.inStock}
+    >
+      <ShoppingCart className="mr-2 w-5 h-5" />
+      {product.inStock ? "Add to Cart" : "Out of Stock"}
+    </Button>
+  ) : (
+    <div className="space-y-2">
+      <Button
+        onClick={handleAddToCart}
+        size="lg"
+        variant="outline"
+        className="w-full"
+        disabled={!product.inStock}
+      >
+        <Plus className="mr-2 w-5 h-5" />
+        Add More
+      </Button>
+      <Button
+        onClick={() => navigate("/cart")}
+        size="lg"
+        className="w-full bg-green-600 hover:bg-green-700"
+      >
+        <Eye className="mr-2 w-5 h-5" />
+        View Cart
+      </Button>
+    </div>
+  )}
+</div>
+
 
             {/* Product Features */}
             <Card className="border-border/50 bg-muted/30">

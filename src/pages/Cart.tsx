@@ -52,7 +52,7 @@ const Cart = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">{item.category}</p>
-                      <p className="text-lg font-bold text-primary">${item.price}</p>
+                      <p className="text-lg font-bold text-primary">₹{item.price}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
@@ -95,7 +95,7 @@ const Cart = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between text-foreground">
                   <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-foreground">
                   <span>Shipping</span>
@@ -104,7 +104,7 @@ const Cart = () => {
                 <Separator />
                 <div className="flex justify-between text-lg font-bold text-foreground">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
                 <Link to="/order">
                   <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">

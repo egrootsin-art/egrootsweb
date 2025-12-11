@@ -5,6 +5,22 @@ import linefollower from "@/assets/linefollower.jpeg";
 import mazesolver from "@/assets/mazesolver.jpeg";
 
   export const featuredProducts: Product[] = [
+    {
+    id: "7",
+    name: "Coding Challenge Event",
+    price: 1,
+    originalPrice: 119.99,
+    image: learnovateBasic,
+    category: "Events",
+    // rating: 4.8,       ← remove
+    // reviewCount: 124,  ← remove if not needed
+    description:
+      "The E-Groots Mini Kit is a compact, all-in-one electronics learning board designed to make robotics, IoT, and sensor-based projects simple and exciting. Powered by an Arduino Nano, it brings together essential modules like PIR motion detection, ultrasonic sensing, DHT22 temperature and humidity monitoring, MPU6050 IMU, gas and touch sensors, a 4-digit display, relay control, and a motor driver—all neatly arranged for easy access without messy wiring. With a built-in breadboard area, switch-controlled power lines, and an ESP expansion slot, the kit is perfect for students, makers, trainers, and STEM programs looking for fast prototyping and practical learning. By eliminating wiring errors and organizing modules intuitively, the E-Groots Mini Kit helps learners focus on creativity, logic-building, and innovation, making it an ideal tool for modern STEM education.",
+      
+    inStock: true,
+    isNew: false,
+    isFeatured: false,
+  },
   {
     id: "1",
     name: "LEARNOVATE KIT INTERMEDIATE",
@@ -76,7 +92,13 @@ import mazesolver from "@/assets/mazesolver.jpeg";
 ];
 
 export const categories = [
- 
+   
+  {
+    name: "Events", 
+    description: "Custom circuit board design and manufacturing services",
+    image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
+    productCount: 12,
+  },
   {
     name: "PCB Design Services", 
     description: "Custom circuit board design and manufacturing services",

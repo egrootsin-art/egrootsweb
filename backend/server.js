@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
 require("dotenv").config();
+require("./db"); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,6 +59,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const productRoutes = require("./routes/productRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 // ✅ REGISTER ROUTES
 app.use("/api/auth", authRoutes);
@@ -66,6 +68,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api", eventRoutes);
 
 console.log("✅ Routes registered:");
 console.log("   - /api/auth");
@@ -157,6 +160,40 @@ E-Groots Team
     res.status(500).json({ error: err.message });
   }
 });
+
+app.post("/api/events/send-confirmation", async (req, res) => {
+  try {
+    const { name, email, eventName } = req.body;
+
+    if (!name || !email || !eventName) {
+      return res.status(400).json({ error: "Missing email data" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `"E-Groots" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `Thank you for registering for ${eventName}`,
+      text: `Hi ${name},
+
+Thank you for completing your registration for ${eventName}.
+We look forward to seeing you at the event!
+
+Regards,
+E-Groots Team`,
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Event confirmation email error:", err);
+    res.status(500).json({ error: "Failed to send confirmation email" });
+  }
+});
+
 
 // ✅ SHIPMENT CONFIRMATION EMAIL (FIXED - NO NESTING)
 app.post("/api/send-shipment-email", async (req, res) => {
