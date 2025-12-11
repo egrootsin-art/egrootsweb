@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Star, Eye } from "lucide-react";
+import { ShoppingCart, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -13,8 +13,8 @@ export interface Product {
   originalPrice?: number;
   image: string;
   category: string;
-  rating: number;
-  reviewCount: number;
+  rating?: number;       // now optional
+  reviewCount?: number;  // now optional
   description: string;
   inStock: boolean;
   isNew?: boolean;
@@ -30,17 +30,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // ✅ Navigate to product detail page
   const handleProductClick = () => {
     navigate(`/product/${product.id}`);
   };
 
-  // ✅ Add to cart without navigating
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click event
-    
+    e.stopPropagation();
     if (!product.inStock) return;
-    
+
     addItem({
       id: product.id,
       name: product.name,
@@ -55,18 +52,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
-  // ✅ Quick view without navigating
   const handleQuickView = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click event
+    e.stopPropagation();
     navigate(`/product/${product.id}`);
   };
 
-  const discountPercent = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const discountPercent = product.originalPrice
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
     : 0;
 
   return (
-    <Card 
+    <Card
       className="group relative tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer"
       onClick={handleProductClick}
     >
@@ -83,9 +81,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Badge>
         )}
         {discountPercent > 0 && (
-          <Badge variant="destructive">
-            -{discountPercent}%
-          </Badge>
+          <Badge variant="destructive">-{discountPercent}%</Badge>
         )}
       </div>
 
@@ -100,17 +96,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       <CardHeader className="p-0 relative">
         <div className="aspect-square overflow-hidden bg-muted/20">
-          <img 
-            src={product.image} 
+          <img
+            src={product.image}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
-          
+
           {/* Hover Overlay with Quick View */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <Button 
-              size="sm" 
-              variant="secondary" 
+            <Button
+              size="sm"
+              variant="secondary"
               className="tech-hover"
               onClick={handleQuickView}
             >
@@ -127,33 +123,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {product.category}
           </Badge>
         </div>
-        
+
         <h3 className="font-semibold text-foreground text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
-        
+
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
           {product.description}
         </p>
 
-        {/* Rating */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 ${
-                  i < Math.floor(product.rating)
-                    ? "text-yellow-400 fill-current"
-                    : "text-muted-foreground"
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-sm text-muted-foreground">
-            ({product.reviewCount})
-          </span>
-        </div>
+        {/* Rating removed from card */}
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-4">
@@ -169,7 +148,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button 
+        <Button
           onClick={handleAddToCart}
           disabled={!product.inStock}
           className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"

@@ -13,7 +13,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   
   const categories = [
-    { name: "3D Printing Kits", value: "3D Printing Kits" },
+    
     { name: "PCB Design Services", value: "PCB Design Services" },
     { name: "Educational Kits", value: "Educational Kits" },
     { name: "Competition Robots", value: "Competition Robots" }

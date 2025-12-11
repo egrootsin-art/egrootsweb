@@ -20,7 +20,8 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
-import VerifyOTP from "./pages/VerifyOtp";
+import VerifyOTP from "./pages/VerifyOTP";
+import Terms from "./pages/Terms";
 
 // Google Auth callback
 import AuthSuccess from "./pages/AuthSuccess";
@@ -48,7 +49,7 @@ const AppRoutes = () => {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/verify-otp" element={<VerifyOTP />} />
-
+      <Route path="/terms" element={<Terms />} />
       {/* ⭐ PROTECTED ROUTES - Require login */}
       <Route
         path="/home"

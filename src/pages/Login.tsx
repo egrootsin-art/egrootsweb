@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Chrome } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,7 @@ interface FormErrors {
   confirmPassword?: string;
   fullName?: string;
   general?: string;
+  terms?: string;
 }
 
 const Login: React.FC = () => {
@@ -37,6 +38,7 @@ const Login: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const validateEmail = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -58,6 +60,9 @@ const Login: React.FC = () => {
         newErrors.confirmPassword = "Confirm password required";
       else if (formData.password !== formData.confirmPassword)
         newErrors.confirmPassword = "Passwords do not match";
+
+      if (!acceptedTerms)
+        newErrors.terms = "You must accept the terms & conditions";
     }
 
     setErrors(newErrors);
@@ -78,65 +83,57 @@ const Login: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-  window.location.href = "http://localhost:5000/api/auth/google/login";
-};
-
-
-
-
+    window.location.href = "http://localhost:5000/api/auth/google/login";
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    let success = false;
+    try {
+      let success = false;
 
-    if (isLogin) {
-      // ✅ LOGIN FLOW (unchanged)
-      success = await login(formData.email, formData.password);
-    } else {
-      // ✅ NEW: OTP FLOW FOR SIGN UP
-      const res = await sendOtp(formData.email);
-
-      if (res.message && !res.error) {
-        // Navigate to OTP page with data
-        navigate("/verify-otp", {
-          state: {
-            fullName: formData.fullName,
-            email: formData.email,
-            password: formData.password,
-          },
-        });
-        return; // Stop here, no login yet
+      if (isLogin) {
+        // login flow
+        success = await login(formData.email, formData.password);
       } else {
-        setErrors({ general: res.error || "Failed to send OTP" });
-      }
-    }
+        // sign‑up with OTP flow
+        const res = await sendOtp(formData.email);
 
-    // Only for login
-    if (success && isLogin) {
-      if (formData.email === "bharanidharan7502@gmail.com") {
-        navigate("/admindashboard");
-      } else {
-        navigate("/");
+        if (res.message && !res.error) {
+          navigate("/verify-otp", {
+            state: {
+              fullName: formData.fullName,
+              email: formData.email,
+              password: formData.password,
+            },
+          });
+          return;
+        } else {
+          setErrors({ general: res.error || "Failed to send OTP" });
+        }
       }
-    }
-  } catch {
-    setErrors({ general: "Something went wrong" });
-  } finally {
-    setIsLoading(false);
-  }
-};
 
+      if (success && isLogin) {
+        if (formData.email === "bharanidharan7502@gmail.com") {
+          navigate("/admindashboard");
+        } else {
+          navigate("/");
+        }
+      }
+    } catch {
+      setErrors({ general: "Something went wrong" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl">
-
-       <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-1">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-1">
           {isLogin ? "Welcome Back" : "Create Account"}
         </h2>
 
@@ -144,7 +141,7 @@ const Login: React.FC = () => {
           {isLogin ? "Sign in to continue" : "Start your journey"}
         </p>
 
-        {/* GOOGLE LOGIN ONLY IN SIGN IN */}
+        {/* Google login only on Sign In */}
         {isLogin && (
           <>
             <button
@@ -155,7 +152,7 @@ const Login: React.FC = () => {
             </button>
 
             <div className="relative my-6">
-              <div className="border-t border-white/20"></div>
+              <div className="border-t border-white/20" />
               <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-black px-3 text-gray-300 text-sm">
                 or
               </span>
@@ -262,10 +259,38 @@ const Login: React.FC = () => {
             </div>
           )}
 
+          {/* Terms & Conditions – only on Sign Up */}
+          {!isLogin && (
+            <div className="space-y-1">
+              <label className="flex items-start gap-2 text-gray-200 text-sm">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/terms")}
+                    className="text-blue-400 underline"
+                  >
+                    Terms & Conditions
+                  </button>
+                  .
+                </span>
+              </label>
+              {errors.terms && (
+                <p className="text-red-400 text-xs">{errors.terms}</p>
+              )}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-semibold shadow-lg"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg transition font-semibold shadow-lg"
           >
             {isLoading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
           </button>
@@ -276,7 +301,11 @@ const Login: React.FC = () => {
             <>
               Don’t have an account?{" "}
               <button
-                onClick={() => setIsLogin(false)}
+                onClick={() => {
+                  setIsLogin(false);
+                  setErrors({});
+                  setAcceptedTerms(false);
+                }}
                 className="text-blue-400 underline"
               >
                 Register
@@ -286,7 +315,10 @@ const Login: React.FC = () => {
             <>
               Already have an account?{" "}
               <button
-                onClick={() => setIsLogin(true)}
+                onClick={() => {
+                  setIsLogin(true);
+                  setErrors({});
+                }}
                 className="text-blue-400 underline"
               >
                 Login
