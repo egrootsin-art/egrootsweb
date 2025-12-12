@@ -60,6 +60,7 @@ const otpRoutes = require("./routes/otpRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const productRoutes = require("./routes/productRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const EventOtp = require("./models/EventOtp");
 
 // ✅ REGISTER ROUTES
 app.use("/api/auth", authRoutes);
@@ -191,6 +192,66 @@ E-Groots Team`,
   } catch (err) {
     console.error("Event confirmation email error:", err);
     res.status(500).json({ error: "Failed to send confirmation email" });
+  }
+});
+
+// ✅ Send OTP for event registration
+app.post("/api/events/send-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await EventOtp.findOneAndUpdate(
+      { email },
+      { otp, expiresAt, verified: false },
+      { upsert: true, new: true }
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    });
+
+    await transporter.sendMail({
+      from: `"E-Groots" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your E-Groots Event OTP",
+      text: `Your OTP for event registration is ${otp}. It is valid for 5 minutes.`,
+    });
+
+    res.json({ success: true, message: "OTP sent to email" });
+  } catch (err) {
+    console.error("Send OTP error:", err);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+});
+
+// ✅ Verify OTP
+app.post("/api/events/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp)
+      return res.status(400).json({ error: "Email and OTP are required" });
+
+    const record = await EventOtp.findOne({ email });
+    if (!record) return res.status(400).json({ error: "OTP not found" });
+
+    if (record.expiresAt < new Date())
+      return res.status(400).json({ error: "OTP expired" });
+
+    if (record.otp !== otp)
+      return res.status(400).json({ error: "Invalid OTP" });
+
+    record.verified = true;
+    await record.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Verify OTP error:", err);
+    res.status(500).json({ error: "Failed to verify OTP" });
   }
 });
 

@@ -227,6 +227,19 @@ const Login: React.FC = () => {
             {errors.password && (
               <p className="text-red-400 text-xs mt-1">{errors.password}</p>
             )}
+
+            {/* Forgot password – only on Login */}
+            {isLogin && (
+              <div className="mt-2 text-right">
+                <button
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
+                  className="text-xs text-blue-400 hover:text-blue-300 underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
           </div>
 
           {!isLogin && (

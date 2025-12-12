@@ -18,6 +18,10 @@ const EventRegistration = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+
   if (!eventProduct) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -34,41 +38,46 @@ const EventRegistration = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
+    if (!otpVerified) {
+      alert("Please verify OTP before proceeding.");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
-    // 1) Save registration in contestdb
-    await axios.post("http://localhost:5000/api/events/register", {
-      eventId: eventProduct.id,
-      eventName: eventProduct.name,
-      name: fullName,
-      email,
-      password,
-    });
+    try {
+      setLoading(true);
 
-    // 2) Send thank‑you email
-    await axios.post("http://localhost:5000/api/events/send-confirmation", {
-      name: fullName,
-      email,
-      eventName: eventProduct.name,
-    });
+      // 1) Save registration in contestdb
+      await axios.post("http://localhost:5000/api/events/register", {
+        eventId: eventProduct.id,
+        eventName: eventProduct.name,
+        name: fullName,
+        email,
+        password,
+      });
 
-    // 3) Navigate to thank‑you (or payment) page
-    navigate(`/events/thank-you/${eventProduct.id}`);
-  } catch (err) {
-    console.error("Event registration/payment flow error", err);
-    alert("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+      // 2) Send thank‑you email
+      await axios.post("http://localhost:5000/api/events/send-confirmation", {
+        name: fullName,
+        email,
+        eventName: eventProduct.name,
+      });
+
+      // 3) Navigate to thank‑you page
+      navigate(`/events/thank-you/${eventProduct.id}`);
+    } catch (err) {
+      console.error("Event registration/payment flow error", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -93,15 +102,47 @@ const EventRegistration = () => {
               />
             </div>
 
+            {/* Email + Send OTP */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setOtpVerified(false);
+                  }}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    if (!email) {
+                      alert("Enter email first");
+                      return;
+                    }
+                    try {
+                      setLoading(true);
+                      await axios.post(
+                        "http://localhost:5000/api/events/send-otp",
+                        { email }
+                      );
+                      setOtpSent(true);
+                      alert("OTP sent to your email");
+                    } catch (err) {
+                      console.error(err);
+                      alert("Failed to send OTP");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  {otpSent ? "Resend OTP" : "Send OTP"}
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -125,6 +166,52 @@ const EventRegistration = () => {
                 required
               />
             </div>
+
+            {/* OTP input + verify */}
+            {otpSent && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Enter OTP (sent to your email)
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="6-digit OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        const res = await axios.post(
+                          "http://localhost:5000/api/events/verify-otp",
+                          { email, otp }
+                        );
+                        if (res.data.success) {
+                          setOtpVerified(true);
+                          alert("OTP verified successfully");
+                        }
+                      } catch (err: any) {
+                        console.error(err);
+                        alert(
+                          err.response?.data?.error ||
+                            "Failed to verify OTP"
+                        );
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                  >
+                    Verify OTP
+                  </Button>
+                </div>
+                {otpVerified && (
+                  <p className="text-xs text-green-600">OTP verified ✔</p>
+                )}
+              </div>
+            )}
 
             <Button
               type="submit"

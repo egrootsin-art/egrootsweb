@@ -136,3 +136,91 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// ✅ SEND OTP FOR PASSWORD RESET
+exports.sendResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    // Must be an existing user
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+    await Otp.deleteMany({ email });
+    await Otp.create({ email, otp: otpCode, expiresAt });
+
+    await transporter.sendMail({
+      from: `"EGROOTS INNOVATE" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Password Reset OTP - EGROOTS INNOVATE",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+          <h2 style="color: #333;">Reset Your Password</h2>
+          <p>Hello,</p>
+          <p>Your OTP code for password reset is:</p>
+          <h1 style="background: #007bff; color: white; padding: 15px; text-align: center; border-radius: 8px; letter-spacing: 5px;">
+            ${otpCode}
+          </h1>
+          <p style="color: #666;">This code is valid for <strong>${OTP_EXPIRY_MINUTES} minutes</strong>.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `,
+    });
+
+    res.json({ message: "Reset OTP sent successfully" });
+  } catch (err) {
+    console.error("❌ Error sending reset OTP:", err);
+    res.status(500).json({ message: "Failed to send reset OTP" });
+  }
+};
+
+// ✅ VERIFY RESET OTP & UPDATE PASSWORD
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP and new password are required" });
+    }
+
+    const otpDoc = await Otp.findOne({ email }).sort({ createdAt: -1 });
+    if (!otpDoc) {
+      return res.status(400).json({ message: "OTP not found or expired" });
+    }
+
+    if (otpDoc.expiresAt < new Date()) {
+      await Otp.deleteOne({ _id: otpDoc._id });
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    if (otpDoc.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    await Otp.deleteMany({ email });
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("❌ Error verifying reset OTP:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
