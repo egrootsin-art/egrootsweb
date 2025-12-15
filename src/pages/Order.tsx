@@ -10,14 +10,22 @@ import { useCart } from "@/contexts/CartContext";
 import { useOrder } from "@/contexts/OrderContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Mail, User, Phone, MapPin, Loader2, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  User,
+  Phone,
+  MapPin,
+  Loader2,
+  ShoppingCart,
+} from "lucide-react";
 
-// ❌ RAZORPAY DISABLED - UNCOMMENT WHEN READY TO USE
-// declare global {
-//   interface Window {
-//     Razorpay: any;
-//   }
-// }
+// ✅ RAZORPAY ENABLED
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const Order = () => {
   const navigate = useNavigate();
@@ -50,22 +58,29 @@ const Order = () => {
     }
   }, [user]);
 
-  // ❌ RAZORPAY DISABLED - UNCOMMENT WHEN READY TO USE
-  // const loadRazorpayScript = () => {
-  //   return new Promise((resolve) => {
-  //     const script = document.createElement("script");
-  //     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  //     script.onload = () => {
-  //       console.log("✅ Razorpay script loaded successfully");
-  //       resolve(true);
-  //     };
-  //     script.onerror = () => {
-  //       console.error("❌ Failed to load Razorpay script");
-  //       resolve(false);
-  //     };
-  //     document.body.appendChild(script);
-  //   });
-  // };
+  // ✅ LOAD RAZORPAY SCRIPT
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const existing = document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+      );
+      if (existing) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => {
+        console.log("✅ Razorpay script loaded successfully");
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error("❌ Failed to load Razorpay script");
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
 
   // VALIDATION FUNCTIONS
   const validateName = (name: string) => {
@@ -84,7 +99,8 @@ const Order = () => {
 
   const validateAddress = (address: string) => {
     if (!address.trim()) return "Delivery address is required";
-    if (address.trim().length < 10) return "Please provide a complete address (minimum 10 characters)";
+    if (address.trim().length < 10)
+      return "Please provide a complete address (minimum 10 characters)";
     return "";
   };
 
@@ -115,10 +131,10 @@ const Order = () => {
     return !nameError && !phoneError && !addressError;
   };
 
-  // ✅ PLACE ORDER DIRECTLY (WITHOUT PAYMENT)
+  // ✅ PLACE ORDER WITH RAZORPAY (REPLACES DIRECT COD SAVE)
   const handlePlaceOrder = async () => {
-    console.log("🚀 Starting order placement...");
-    
+    console.log("🚀 Starting payment + order process...");
+
     if (!validateAllFields()) {
       console.log("❌ Validation failed");
       toast({
@@ -133,247 +149,169 @@ const Order = () => {
     setIsProcessing(true);
 
     try {
-      // Save Order to MongoDB
-      console.log("💾 Saving order to database...");
-      const orderPayload = {
-        customer: customerInfo,
-        items: items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          category: item.category || "Uncategorized",
-          image: item.image || "/placeholder.svg",
-        })),
-        totalAmount: total,
-        paymentMethod: "Cash on Delivery", // ✅ Changed from Razorpay
-        paymentStatus: "Pending", // ✅ Changed from Completed
+      // 1) Load Razorpay SDK
+      console.log("📦 Loading Razorpay script...");
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        toast({
+          title: "Payment Error",
+          description: "Failed to load payment gateway. Please try again.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2) Get Razorpay key
+      console.log("🔑 Fetching Razorpay key from backend...");
+      const keyResponse = await axios.get(
+        "http://localhost:5000/api/payment/get-key"
+      );
+      const razorpayKey = keyResponse.data.key;
+      console.log("✅ Razorpay Key received:", razorpayKey);
+
+      // 3) Create Razorpay order (amount in paise)
+      console.log("💰 Creating Razorpay order...");
+      const orderResponse = await axios.post(
+        "http://localhost:5000/api/payment/create-order",
+        {
+          amount: Math.round(total * 100),
+        }
+      );
+      console.log("✅ Razorpay order created:", orderResponse.data);
+
+      const { id: razorpay_order_id, amount, currency } = orderResponse.data;
+
+      // 4) Open Razorpay Checkout
+      const options = {
+        key: razorpayKey,
+        amount,
+        currency,
+        name: "E-Groots",
+        description: "Order Payment",
+        order_id: razorpay_order_id,
+        handler: async (response: any) => {
+          console.log("✅ Payment successful! Response:", response);
+
+          try {
+            // 5) Verify payment on backend
+            console.log("🔐 Verifying payment signature...");
+            const verifyResponse = await axios.post(
+              "http://localhost:5000/api/payment/verify",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            );
+            console.log("✅ Payment verified:", verifyResponse.data);
+
+            // 6) Save order in MongoDB
+            console.log("💾 Saving order to database...");
+            const orderPayload = {
+              customer: customerInfo,
+              items: items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                category: item.category || "Uncategorized",
+                image: item.image || "/placeholder.svg",
+              })),
+              totalAmount: total,
+              paymentMethod: "Razorpay",
+              paymentStatus: "Completed",
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+            };
+
+            console.log("📦 Order payload:", orderPayload);
+
+            const res = await axios.post(
+              "http://localhost:5000/api/orders/create",
+              orderPayload
+            );
+
+            const orderId = res.data.orderId;
+            console.log("✅ Order saved! Order ID:", orderId);
+
+            // 7) Send confirmation email
+            console.log("📧 Sending confirmation email...");
+            await axios.post("http://localhost:5000/api/send-order-email", {
+              customerInfo,
+              items: orderPayload.items,
+              total,
+              paymentMethod: "Razorpay",
+            });
+
+            console.log("✅ Email sent successfully");
+
+            toast({
+              title: "Payment Successful! 🎉",
+              description: `Order #${orderId.slice(-6)} has been confirmed`,
+            });
+
+            clearCart();
+            refreshOrders();
+            navigate("/my-orders");
+          } catch (err: any) {
+            console.error("❌ Error saving order:", err);
+            console.error("❌ Error response:", err.response?.data);
+            toast({
+              title: "Order Failed",
+              description:
+                err.response?.data?.message ||
+                "Payment verified but order could not be saved.",
+              variant: "destructive",
+            });
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          contact: customerInfo.phone,
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        modal: {
+          ondismiss: () => {
+            console.log("⚠️ Payment modal closed by user");
+            toast({
+              title: "Payment Cancelled",
+              description: "You cancelled the payment process.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          },
+        },
       };
 
-      console.log("📦 Order payload:", orderPayload);
-
-      const res = await axios.post(
-        "http://localhost:5000/api/orders/create",
-        orderPayload
-      );
-
-      const orderId = res.data.orderId;
-      console.log("✅ Order saved! Order ID:", orderId);
-
-      // Send Confirmation Email
-      console.log("📧 Sending confirmation email...");
-      await axios.post("http://localhost:5000/api/send-order-email", {
-        customerInfo,
-        items: orderPayload.items,
-        total,
-        paymentMethod: "Cash on Delivery",
-      });
-
-      console.log("✅ Email sent successfully");
-
-      toast({
-        title: "Order Placed Successfully! 🎉",
-        description: `Order #${orderId.slice(-6)} has been confirmed`,
-      });
-
-      clearCart();
-      refreshOrders();
-      navigate("/my-orders");
+      console.log("🎨 Opening Razorpay payment modal...");
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
     } catch (error: any) {
-      console.error("❌ Order placement error:", error);
+      console.error("❌ Payment error:", error);
       console.error("❌ Error details:", {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
+        url: error.config?.url,
       });
-      
+
       toast({
-        title: "Order Failed",
-        description: error.response?.data?.message || "Unable to place order. Please try again.",
+        title: "Payment Failed",
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "Unable to initiate payment. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
   };
-
-  // ❌ RAZORPAY PAYMENT HANDLER - COMMENTED OUT
-  // const handlePlaceOrderWithRazorpay = async () => {
-  //   console.log("🚀 Starting payment process...");
-  //   
-  //   if (!validateAllFields()) {
-  //     console.log("❌ Validation failed");
-  //     toast({
-  //       title: "Validation Error ❌",
-  //       description: "Please fix the errors in the form",
-  //       variant: "destructive",
-  //     });
-  //     return;
-  //   }
-  //
-  //   console.log("✅ Validation passed");
-  //   setIsProcessing(true);
-  //
-  //   try {
-  //     // Load Razorpay Script
-  //     console.log("📦 Loading Razorpay script...");
-  //     const scriptLoaded = await loadRazorpayScript();
-  //     if (!scriptLoaded) {
-  //       toast({
-  //         title: "Payment Error",
-  //         description: "Failed to load payment gateway. Please try again.",
-  //         variant: "destructive",
-  //       });
-  //       setIsProcessing(false);
-  //       return;
-  //     }
-  //
-  //     // Get Razorpay Key
-  //     console.log("🔑 Fetching Razorpay key from backend...");
-  //     console.log("📡 API URL: http://localhost:5000/api/payment/get-key");
-  //     
-  //     const keyResponse = await axios.get("http://localhost:5000/api/payment/get-key");
-  //     const razorpayKey = keyResponse.data.key;
-  //     
-  //     console.log("✅ Razorpay Key received:", razorpayKey);
-  //
-  //     // Create Razorpay Order
-  //     console.log("💰 Creating Razorpay order...");
-  //     console.log("📡 API URL: http://localhost:5000/api/payment/create-order");
-  //     console.log("💵 Amount (in paise):", Math.round(total * 100));
-  //     
-  //     const orderResponse = await axios.post("http://localhost:5000/api/payment/create-order", {
-  //       amount: Math.round(total * 100),
-  //     });
-  //
-  //     console.log("✅ Razorpay order created:", orderResponse.data);
-  //
-  //     const { id: razorpay_order_id, amount, currency } = orderResponse.data;
-  //
-  //     // Razorpay Options
-  //     const options = {
-  //       key: razorpayKey,
-  //       amount: amount,
-  //       currency: currency,
-  //       name: "E-Groots",
-  //       description: "Order Payment",
-  //       order_id: razorpay_order_id,
-  //       handler: async (response: any) => {
-  //         console.log("✅ Payment successful! Response:", response);
-  //         
-  //         try {
-  //           // Verify Payment
-  //           console.log("🔐 Verifying payment signature...");
-  //           console.log("📡 API URL: http://localhost:5000/api/payment/verify");
-  //           
-  //           const verifyResponse = await axios.post("http://localhost:5000/api/payment/verify", {
-  //             razorpay_order_id: response.razorpay_order_id,
-  //             razorpay_payment_id: response.razorpay_payment_id,
-  //             razorpay_signature: response.razorpay_signature,
-  //           });
-  //
-  //           console.log("✅ Payment verified:", verifyResponse.data);
-  //
-  //           // Save Order to MongoDB
-  //           console.log("💾 Saving order to database...");
-  //           const orderPayload = {
-  //             customer: customerInfo,
-  //             items: items.map((item) => ({
-  //               id: item.id,
-  //               name: item.name,
-  //               price: item.price,
-  //               quantity: item.quantity,
-  //               category: item.category || "Uncategorized",
-  //               image: item.image || "/placeholder.svg",
-  //             })),
-  //             totalAmount: total,
-  //             paymentMethod: "Razorpay",
-  //             paymentStatus: "Completed",
-  //             razorpay_order_id: response.razorpay_order_id,
-  //             razorpay_payment_id: response.razorpay_payment_id,
-  //           };
-  //
-  //           console.log("📦 Order payload:", orderPayload);
-  //
-  //           const res = await axios.post(
-  //             "http://localhost:5000/api/orders/create",
-  //             orderPayload
-  //           );
-  //
-  //           const orderId = res.data.orderId;
-  //           console.log("✅ Order saved! Order ID:", orderId);
-  //
-  //           // Send Confirmation Email
-  //           console.log("📧 Sending confirmation email...");
-  //           await axios.post("http://localhost:5000/api/send-order-email", {
-  //             customerInfo,
-  //             items: orderPayload.items,
-  //             total,
-  //             paymentMethod: "Razorpay",
-  //           });
-  //
-  //           console.log("✅ Email sent successfully");
-  //
-  //           toast({
-  //             title: "Payment Successful! 🎉",
-  //             description: `Order #${orderId.slice(-6)} has been confirmed`,
-  //           });
-  //
-  //           clearCart();
-  //           refreshOrders();
-  //           navigate("/my-orders");
-  //         } catch (err: any) {
-  //           console.error("❌ Error saving order:", err);
-  //           console.error("❌ Error response:", err.response?.data);
-  //           toast({
-  //             title: "Order Failed",
-  //             description: err.response?.data?.message || "Payment verified but order could not be saved.",
-  //             variant: "destructive",
-  //           });
-  //         }
-  //       },
-  //       prefill: {
-  //         name: customerInfo.name,
-  //         email: customerInfo.email,
-  //         contact: customerInfo.phone,
-  //       },
-  //       theme: {
-  //         color: "#3b82f6",
-  //       },
-  //       modal: {
-  //         ondismiss: () => {
-  //           console.log("⚠️ Payment modal closed by user");
-  //           toast({
-  //             title: "Payment Cancelled",
-  //             description: "You cancelled the payment process.",
-  //             variant: "destructive",
-  //           });
-  //           setIsProcessing(false);
-  //         },
-  //       },
-  //     };
-  //
-  //     console.log("🎨 Opening Razorpay payment modal...");
-  //     const razorpay = new window.Razorpay(options);
-  //     razorpay.open();
-  //     setIsProcessing(false);
-  //   } catch (error: any) {
-  //     console.error("❌ Payment error:", error);
-  //     console.error("❌ Error details:", {
-  //       message: error.message,
-  //       response: error.response?.data,
-  //       status: error.response?.status,
-  //       url: error.config?.url,
-  //     });
-  //     
-  //     toast({
-  //       title: "Payment Failed",
-  //       description: error.response?.data?.message || error.message || "Unable to initiate payment. Please try again.",
-  //       variant: "destructive",
-  //     });
-  //     setIsProcessing(false);
-  //   }
-  // };
 
   if (items.length === 0) {
     return (
@@ -434,9 +372,7 @@ const Order = () => {
 
               {/* EMAIL */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Email Address
-                </label>
+                <label className="text-sm font-medium">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                   <Input
@@ -459,9 +395,13 @@ const Order = () => {
                     type="tel"
                     placeholder="10-digit mobile number"
                     value={customerInfo.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phone", e.target.value)
+                    }
                     maxLength={10}
-                    className={`pl-10 ${errors.phone ? "border-red-500" : ""}`}
+                    className={`pl-10 ${
+                      errors.phone ? "border-red-500" : ""
+                    }`}
                   />
                 </div>
                 {errors.phone && (
@@ -482,8 +422,12 @@ const Order = () => {
                   <Input
                     placeholder="Enter complete delivery address"
                     value={customerInfo.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                    className={`pl-10 ${errors.address ? "border-red-500" : ""}`}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
+                    className={`pl-10 ${
+                      errors.address ? "border-red-500" : ""
+                    }`}
                   />
                 </div>
                 {errors.address && (
@@ -553,13 +497,14 @@ const Order = () => {
                 ) : (
                   <>
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    Place Order
+                    Place Order & Pay
                   </>
                 )}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Cash on Delivery - Pay when you receive the order
+                Online payment via Razorpay. Cash on Delivery can be added as a
+                separate option if needed.
               </p>
             </CardContent>
           </Card>

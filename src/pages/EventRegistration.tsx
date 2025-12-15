@@ -7,6 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { featuredProducts } from "@/data/products";
 
+// Allow window.Razorpay
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 const EventRegistration = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -21,6 +28,24 @@ const EventRegistration = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [otp, setOtp] = useState("");
+
+  // Load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const existing = document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+      );
+      if (existing) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   if (!eventProduct) {
     return (
@@ -53,28 +78,107 @@ const EventRegistration = () => {
     try {
       setLoading(true);
 
-      // 1) Save registration in contestdb
-      await axios.post("http://localhost:5000/api/events/register", {
-        eventId: eventProduct.id,
-        eventName: eventProduct.name,
-        name: fullName,
-        email,
-        password,
-      });
+      // 1) Load Razorpay
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert("Failed to load payment gateway. Please try again.");
+        setLoading(false);
+        return;
+      }
 
-      // 2) Send thank‑you email
-      await axios.post("http://localhost:5000/api/events/send-confirmation", {
-        name: fullName,
-        email,
-        eventName: eventProduct.name,
-      });
+      // 2) Get key
+      const keyRes = await axios.get(
+        "http://localhost:5000/api/payment/get-key"
+      );
+      const razorpayKey = keyRes.data.key;
 
-      // 3) Navigate to thank‑you page
-      navigate(`/events/thank-you/${eventProduct.id}`);
+      // 3) Create order: amount in paise (₹1 -> 100)
+      const amountInPaise = Math.round(eventProduct.price * 100);
+      const orderRes = await axios.post(
+        "http://localhost:5000/api/payment/create-order",
+        { amount: amountInPaise }
+      );
+
+      const { id: razorpay_order_id, amount, currency } = orderRes.data;
+
+      // 4) Open Razorpay
+      const options = {
+        key: razorpayKey,
+        amount,
+        currency,
+        name: "E-Groots",
+        description: `Registration for ${eventProduct.name}`,
+        order_id: razorpay_order_id,
+        prefill: {
+          name: fullName,
+          email: email,
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        handler: async (response: any) => {
+          try {
+            // 5) Verify payment on backend
+            const verifyRes = await axios.post(
+              "http://localhost:5000/api/payment/verify",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            );
+
+            if (!verifyRes.data.success) {
+              alert("Payment verification failed. Please contact support.");
+              setLoading(false);
+              return;
+            }
+
+            // 6) NOW save registration in contest DB (only after successful payment)
+            await axios.post("http://localhost:5000/api/events/register", {
+              eventId: eventProduct.id,
+              eventName: eventProduct.name,
+              name: fullName,
+              email,
+              password,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+            });
+
+            // 7) Send confirmation email
+            await axios.post(
+              "http://localhost:5000/api/events/send-confirmation",
+              {
+                name: fullName,
+                email,
+                eventName: eventProduct.name,
+              }
+            );
+
+            // 8) Go to thank‑you page
+            navigate(`/events/thank-you/${eventProduct.id}`);
+          } catch (err) {
+            console.error("Event registration/payment flow error", err);
+            alert(
+              "Payment was captured but something went wrong after payment. Please contact support."
+            );
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            alert("Payment cancelled.");
+            setLoading(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (err) {
       console.error("Event registration/payment flow error", err);
       alert("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -87,11 +191,12 @@ const EventRegistration = () => {
             Register for {eventProduct.name}
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Create your account to continue to payment.
+            Create your account and pay ₹{eventProduct.price} to confirm your spot.
           </p>
         </CardHeader>
         <CardContent>
           <form className="space-y-5" onSubmit={handleSubmit}>
+            {/* Full Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Full Name</label>
               <Input
@@ -145,6 +250,7 @@ const EventRegistration = () => {
               </div>
             </div>
 
+            {/* Password */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
               <Input
@@ -156,6 +262,7 @@ const EventRegistration = () => {
               />
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm Password</label>
               <Input
@@ -218,7 +325,7 @@ const EventRegistration = () => {
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={loading}
             >
-              {loading ? "Processing..." : "Proceed to Payment"}
+              {loading ? "Processing..." : `Pay ₹${eventProduct.price} & Register`}
             </Button>
           </form>
         </CardContent>

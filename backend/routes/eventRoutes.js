@@ -1,6 +1,6 @@
 // backend/routes/eventRoutes.js
 const express = require("express");
-const EventRegistration = require("../models/EventRegistration");
+const Participant = require("../models/Participant");
 
 const router = express.Router();
 
@@ -13,9 +13,8 @@ router.post("/events/register", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const registration = await EventRegistration.create({
-      eventId,
-      eventName,
+    const registration = await Participant.create({
+      
       name,
       email,
       password,

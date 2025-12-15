@@ -7,16 +7,17 @@ import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/logo.png";
 
 const Navigation = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);       // mobile menu
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false); // desktop icon menu
   const [searchTerm, setSearchTerm] = useState("");
   const { items } = useCart();
   const navigate = useNavigate();
-  
+
   const categories = [
     { name: "Events", value: "Events" },
     { name: "PCB Design Services", value: "PCB Design Services" },
     { name: "Educational Kits", value: "Educational Kits" },
-    { name: "Competition Robots", value: "Competition Robots" }
+    { name: "Competition Robots", value: "Competition Robots" },
   ];
 
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
@@ -26,80 +27,51 @@ const Navigation = () => {
     if (searchTerm.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
     } else {
-      navigate('/products');
+      navigate("/products");
     }
+    setIsMenuOpen(false);
   };
 
-  // ✅ Handle category click
   const handleCategoryClick = (categoryValue: string) => {
     navigate(`/products?category=${encodeURIComponent(categoryValue)}`);
-    setIsMenuOpen(false); // Close mobile menu
+    setIsMenuOpen(false);
+    setIsDesktopMenuOpen(false);
+  };
+
+  const go = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+    setIsDesktopMenuOpen(false);
   };
 
   return (
     <nav className="bg-white sticky top-0 z-50 border-b border-gray-200/20">
       <div className="container mx-auto px-4">
-        {/* Main Navigation */}
+        {/* Top bar */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 flex items-center justify-center">
-             <img src={logoImage} alt="E-Groots Logo" className="w-full h-full object-cover" />
+              <img
+                src={logoImage}
+                alt="E-Groots Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <h1 className="text-xl font-bold text-primary">E-Groots</h1>
-              <p className="text-xs text-muted-foreground">Empowering Future Innovators</p>
+              <p className="text-xs text-muted-foreground">
+                Empowering Future Innovators
+              </p>
             </div>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-black hover:text-blue-600 transition-colors">
-              Home
-            </Link>
-            <div className="relative group">
-              <button className="text-black hover:text-blue-600 transition-colors">
-                Products
-              </button>
-              {/* ✅ Updated Dropdown with Category Filtering */}
-              <div className="absolute top-full left-0 mt-2 w-48 glass rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <div className="p-2">
-                  {/* All Products Option */}
-                  <button
-                    onClick={() => navigate('/products')}
-                    className="block w-full text-left px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                  >
-                    All Products
-                  </button>
-                  {/* Category Options */}
-                  {categories.map((category) => (
-                    <button
-                      key={category.value}
-                      onClick={() => handleCategoryClick(category.value)}
-                      className="block w-full text-left px-3 py-2 text-sm text-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                    >
-                      {category.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <Link to="/about" className="text-black hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-black hover:text-blue-600 transition-colors">
-              Contact
-            </Link>
-            <Link to="/my-orders" className="text-black hover:text-blue-600 transition-colors">
-              My Orders
-            </Link>
-          </div>
-
-          {/* Search & Cart */}
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2">
+          {/* Right side: search (desktop), dashboard, cart, menus */}
+          <div className="flex items-center space-x-2">
+            {/* Desktop search */}
+            <div className="hidden md:flex items-center">
               <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products..."
                   value={searchTerm}
@@ -108,14 +80,16 @@ const Navigation = () => {
                 />
               </form>
             </div>
-            
-            <Link to="/home">
+
+            {/* Desktop Dashboard button */}
+            <Link to="/home" className="hidden md:inline-flex">
               <Button variant="outline" size="sm" className="tech-hover">
                 <LayoutDashboard className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
             </Link>
-            
+
+            {/* Cart */}
             <Link to="/cart">
               <Button variant="ghost" className="relative p-2">
                 <ShoppingCart className="w-5 h-5 text-black hover:text-blue-600 transition-colors" />
@@ -127,22 +101,72 @@ const Navigation = () => {
               </Button>
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Desktop icon menu (three lines, black) */}
+            <div className="relative hidden md:block">
+              <button
+                type="button"
+                onClick={() => setIsDesktopMenuOpen((prev) => !prev)}
+                className="p-2"
+              >
+                <Menu className="w-5 h-5 text-black" />
+              </button>
+
+              {isDesktopMenuOpen && (
+                <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50">
+                  <button
+                    onClick={() => go("/")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    Home
+                  </button>
+                  <button
+                    onClick={() => go("/products")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    Products
+                  </button>
+                  <button
+                    onClick={() => go("/about")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    About
+                  </button>
+                  <button
+                    onClick={() => go("/contact")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    Contact
+                  </button>
+                  <button
+                    onClick={() => go("/my-orders")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    My Orders
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile hamburger */}
             <Button
               variant="ghost"
               className="md:hidden p-2"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
             >
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMenuOpen ? (
+                <X className="w-5 h-5 text-black" />
+              ) : (
+                <Menu className="w-5 h-5 text-black" />
+              )}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile full menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-4 animate-slide-up">
+          <div className="md:hidden py-4 space-y-4 animate-slide-up border-t border-gray-200">
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
                 value={searchTerm}
@@ -150,67 +174,51 @@ const Navigation = () => {
                 className="pl-10 w-full bg-muted/50 border-border"
               />
             </form>
-            
-            <div className="space-y-2">
-              <Link 
-                to="/" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-foreground hover:text-primary transition-colors py-2"
-              >
-                Home
-              </Link>
-              <div className="space-y-1">
-                <p className="text-primary font-medium py-2">Products</p>
-                {/* ✅ All Products Option */}
-                <button
-                  onClick={() => {
-                    navigate('/products');
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
-                >
-                  All Products
-                </button>
-                {/* ✅ Category Options */}
-                {categories.map((category) => (
-                  <button
-                    key={category.value}
-                    onClick={() => handleCategoryClick(category.value)}
-                    className="block w-full text-left text-sm text-muted-foreground hover:text-primary transition-colors py-1 pl-4"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-              <Link 
-                to="/about" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-foreground hover:text-primary transition-colors py-2"
-              >
-                About
-              </Link>
-              <Link 
-                to="/contact" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-foreground hover:text-primary transition-colors py-2"
-              >
-                Contact
-              </Link>
-              <Link 
-                to="/my-orders" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-foreground hover:text-primary transition-colors py-2"
-              >
-                My Orders
-              </Link>
-              <Link 
-                to="/home" 
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-foreground hover:text-primary transition-colors py-2"
-              >
-                Dashboard
-              </Link>
-            </div>
+
+           <div className="space-y-2">
+  <button
+    onClick={() => go("/")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    Home
+  </button>
+
+  <button
+    onClick={() => go("/products")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    Products
+  </button>
+
+  <button
+    onClick={() => go("/about")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    About
+  </button>
+
+  <button
+    onClick={() => go("/contact")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    Contact
+  </button>
+
+  <button
+    onClick={() => go("/my-orders")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    My Orders
+  </button>
+
+  <button
+    onClick={() => go("/home")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    Dashboard
+  </button>
+</div>
+
           </div>
         )}
       </div>

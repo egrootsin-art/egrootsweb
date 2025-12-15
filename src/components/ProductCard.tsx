@@ -95,27 +95,29 @@ const ProductCard = ({ product }: ProductCardProps) => {
       )}
 
       <CardHeader className="p-0 relative">
-        <div className="aspect-square overflow-hidden bg-muted/20">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
+  {/* fixed height, image fully visible */}
+  <div className="relative w-full h-64 bg-muted/20 overflow-hidden flex items-center justify-center">
+    <img
+      src={product.image}
+      alt={product.name}
+      className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+    />
 
-          {/* Hover Overlay with Quick View */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="tech-hover"
-              onClick={handleQuickView}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Quick View
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+    {/* Hover Overlay with Quick View */}
+    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+      <Button
+        size="sm"
+        variant="secondary"
+        className="tech-hover"
+        onClick={handleQuickView}
+      >
+        <Eye className="w-4 h-4 mr-2" />
+        Quick View
+      </Button>
+    </div>
+  </div>
+</CardHeader>
+
 
       <CardContent className="p-4">
         <div className="mb-2">

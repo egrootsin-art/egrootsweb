@@ -4,19 +4,16 @@ import learnovateBasic from "@/assets/INTERMEDIATE.jpeg";
 import linefollower from "@/assets/linefollower.jpeg";
 import mazesolver from "@/assets/mazesolver.jpeg";
 
-  export const featuredProducts: Product[] = [
-    {
+export const featuredProducts: Product[] = [
+  {
     id: "7",
     name: "Coding Challenge Event",
     price: 1,
     originalPrice: 119.99,
     image: learnovateBasic,
     category: "Events",
-    // rating: 4.8,       ← remove
-    // reviewCount: 124,  ← remove if not needed
     description:
       "The E-Groots Mini Kit is a compact, all-in-one electronics learning board designed to make robotics, IoT, and sensor-based projects simple and exciting. Powered by an Arduino Nano, it brings together essential modules like PIR motion detection, ultrasonic sensing, DHT22 temperature and humidity monitoring, MPU6050 IMU, gas and touch sensors, a 4-digit display, relay control, and a motor driver—all neatly arranged for easy access without messy wiring. With a built-in breadboard area, switch-controlled power lines, and an ESP expansion slot, the kit is perfect for students, makers, trainers, and STEM programs looking for fast prototyping and practical learning. By eliminating wiring errors and organizing modules intuitively, the E-Groots Mini Kit helps learners focus on creativity, logic-building, and innovation, making it an ideal tool for modern STEM education.",
-      
     inStock: true,
     isNew: false,
     isFeatured: false,
@@ -28,11 +25,8 @@ import mazesolver from "@/assets/mazesolver.jpeg";
     originalPrice: 119.99,
     image: learnovateBasic,
     category: "Educational Kits",
-    // rating: 4.8,       ← remove
-    // reviewCount: 124,  ← remove if not needed
     description:
       "The E-Groots Mini Kit is a compact, all-in-one electronics learning board designed to make robotics, IoT, and sensor-based projects simple and exciting. Powered by an Arduino Nano, it brings together essential modules like PIR motion detection, ultrasonic sensing, DHT22 temperature and humidity monitoring, MPU6050 IMU, gas and touch sensors, a 4-digit display, relay control, and a motor driver—all neatly arranged for easy access without messy wiring. With a built-in breadboard area, switch-controlled power lines, and an ESP expansion slot, the kit is perfect for students, makers, trainers, and STEM programs looking for fast prototyping and practical learning. By eliminating wiring errors and organizing modules intuitively, the E-Groots Mini Kit helps learners focus on creativity, logic-building, and innovation, making it an ideal tool for modern STEM education.",
-      
     inStock: true,
     isNew: false,
     isFeatured: false,
@@ -44,8 +38,6 @@ import mazesolver from "@/assets/mazesolver.jpeg";
     originalPrice: 49.99,
     image: learnovateInter,
     category: "Educational Kits",
-    // rating: 4.5,
-    // reviewCount: 203,
     description:
       "The E-Groots Intermediate Kit is a powerful step up for learners ready to move beyond the basics and build real, functional electronic systems. Designed with advanced sensors, wireless modules, motor control components, and a spacious prototyping area, it enables students to create smart automation, IoT, and robotics projects with ease. Equipped with modules such as Ultrasonic Sensor, DHT22, PIR Motion Sensor, Bluetooth, I2C LCD Display, Touch Sensor, Gas Sensor, NeoPixel RGB Strip, and a robust Motor Driver, the kit offers a complete environment for hands-on experimentation. Its logical, modular layout helps learners clearly understand circuit flow, component behavior, and coding concepts while reducing wiring errors. Built on E-Groots’ commitment to clarity, creativity, and practical exploration, the Intermediate Kit gives students the confidence to design, innovate, and bring their ideas to life—making it perfect for STEM labs, mini-project builders, and enthusiasts aiming to level up their skills.",
     inStock: true,
@@ -56,8 +48,6 @@ import mazesolver from "@/assets/mazesolver.jpeg";
     price: 1,
     image: mazesolver,
     category: "Competition Robots",
-    // rating: 4.9,
-    // reviewCount: 156,
     description:
       "The E-Groots Maze Solver Kit is a high-performance robotics platform built for serious maze-solving and competition-level precision. Powered by an ESP32 for fast processing, it features three VL6180X ToF sensors that deliver millimeter-level wall detection and 600 RPM encoder motors for smooth, accurate movement through complex paths. The MX1508 motor driver ensures stable dual-motor control even during sharp turns, rapid acceleration, and long straight runs. Lightweight, responsive, and fully ready for PID tuning, mapping, and autonomous navigation algorithms, this kit provides everything needed to master advanced robotics concepts. With its compact, competition-ready design, it’s an ideal choice for students and enthusiasts aiming for reliable, high-speed maze-solving performance.",
     inStock: true,
@@ -70,8 +60,6 @@ import mazesolver from "@/assets/mazesolver.jpeg";
     price: 1,
     image: linefollower,
     category: "Competition Robots",
-    // rating: 4.8,
-    // reviewCount: 91,
     description:
       "The E-Groots Line Follower Kit is a fast, classroom-friendly robotics platform designed to teach real-time sensor processing, motor control, and practical automation. Built with a reliable microcontroller, high-speed DC motors, and a high-precision IR sensor array, it can detect and follow black or white tracks with impressive stability and accuracy. Its lightweight chassis, efficient motor driver, and beginner-friendly architecture make it perfect for students starting their robotics journey as well as those preparing for competitions. From simple line following to advanced PID tuning, the kit supports a wide range of algorithms and encourages hands-on experimentation. Compact, customizable, and easy to assemble, it transforms coding logic into smooth, real-world movement.",
     inStock: true,
@@ -83,8 +71,6 @@ import mazesolver from "@/assets/mazesolver.jpeg";
     image:
       "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=400&h=400&fit=crop",
     category: "PCB Design Services",
-    // rating: 4.7,
-    // reviewCount: 67,
     description: "Currently not Available.",
     inStock: false,
     isFeatured: true,
@@ -92,56 +78,43 @@ import mazesolver from "@/assets/mazesolver.jpeg";
 ];
 
 export const categories = [
-   
   {
-    name: "Events", 
+    name: "Events",
     description: "Custom circuit board design and manufacturing services",
-    image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
     productCount: 12,
   },
   {
-    name: "PCB Design Services", 
+    name: "PCB Design Services",
     description: "Custom circuit board design and manufacturing services",
-    image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
     productCount: 12,
   },
   {
     name: "Educational Kits",
-    description: "Learning kits and development boards for students and educators",
-    image: "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=300&h=200&fit=crop",
+    description:
+      "Learning kits and development boards for students and educators",
+    image:
+      "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=300&h=200&fit=crop",
     productCount: 45,
   },
   {
     name: "Competition Robots",
-    description: "High-performance robotics kits for competitions and advanced projects",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=200&fit=crop",
+    description:
+      "High-performance robotics kits for competitions and advanced projects",
+    image:
+      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=200&fit=crop",
     productCount: 18,
   },
 ];
 
-export const testimonials = [
-  {
-    id: "1",
-    name: "Sarah Chen",
-    role: "Computer Science Student",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=60&h=60&fit=crop&crop=face",
-    content: "E-Groots has been instrumental in my robotics projects. The quality of their kits and the support they provide is exceptional!",
-    rating: 5,
-  },
-  {
-    id: "2", 
-    name: "Alex Rodriguez",
-    role: "High School Teacher",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face",
-    content: "As an educator, I appreciate how E-Groots makes advanced technology accessible to young minds. My students love their Arduino kits!",
-    rating: 5,
-  },
-  {
-    id: "3",
-    name: "Priya Patel", 
-    role: "Engineering Student",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face",
-    content: "The 3D printing kit I bought helped me win the university design competition. Excellent quality and fast shipping!",
-    rating: 5,
-  },
-];
+export const testimonials: {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  content: string;
+  rating: number;
+}[] = [];
