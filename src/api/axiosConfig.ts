@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:5000", // your backend URL
+  baseURL: "https://egroots-innovate-shop-production.up.railway.app", // your backend URL
   headers: {
     "Content-Type": "application/json",
   },
