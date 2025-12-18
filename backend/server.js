@@ -5,35 +5,50 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
 require("dotenv").config();
-require("./db"); 
+require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Derived URLs
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+const NODE_ENV = process.env.NODE_ENV || "development";
+
 // MIDDLEWARE
 app.use(express.json());
 
-// SESSION
+// SESSION (configured for HTTPS-ready secure cookies)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "supersecretkey",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true },
+    cookie: {
+      httpOnly: true,
+      secure: NODE_ENV === "production", // secure cookies on HTTPS in production
+      sameSite: NODE_ENV === "production" ? "none" : "lax",
+    },
   })
 );
 
-// PASSPORT
+// PASSPORT - Initialize passport with Google strategy
+require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:8080",
-  "https://egroots-first-9g0udc030-bharanis-projects-b9e51904.vercel.app",
-  "https://egroots-innovate-shop-production.up.railway.app",
-];
+const allowedOrigins = [];
+
+// Frontend URL from env (production / staging)
+if (FRONTEND_URL) {
+  allowedOrigins.push(FRONTEND_URL);
+}
+
+// Local development origins only for non-production
+if (NODE_ENV !== "production") {
+  allowedOrigins.push("http://localhost:5173", "http://localhost:8080");
+}
 
 app.use(
   cors({
@@ -75,17 +90,14 @@ app.get("/", (req, res) => {
 const authRoutes = require("./routes/authRoutes");
 const googleAuthRoutes = require("./routes/googleAuthRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-const otpRoutes = require("./routes/otpRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const productRoutes = require("./routes/productRoutes");
 const eventRoutes = require("./routes/eventRoutes");
-const EventOtp = require("./models/EventOtp");
 
 // ✅ REGISTER ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/auth/google", googleAuthRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/otp", otpRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api", eventRoutes);
@@ -94,7 +106,6 @@ console.log("✅ Routes registered:");
 console.log("   - /api/auth");
 console.log("   - /api/auth/google");
 console.log("   - /api/orders");
-console.log("   - /api/otp");
 console.log("   - /api/payment");
 
 // ✅ TEST PAYMENT ROUTE
@@ -213,68 +224,6 @@ E-Groots Team`,
     res.status(500).json({ error: "Failed to send confirmation email" });
   }
 });
-
-// ✅ Send OTP for event registration
-app.post("/api/events/send-otp", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Email is required" });
-
-    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    await EventOtp.findOneAndUpdate(
-      { email },
-      { otp, expiresAt, verified: false },
-      { upsert: true, new: true }
-    );
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
-
-    await transporter.sendMail({
-      from: `"E-Groots" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your E-Groots Event OTP",
-      text: `Your OTP for event registration is ${otp}. It is valid for 5 minutes.`,
-    });
-
-    res.json({ success: true, message: "OTP sent to email" });
-  } catch (err) {
-    console.error("Send OTP error:", err);
-    res.status(500).json({ error: "Failed to send OTP" });
-  }
-});
-
-// ✅ Verify OTP
-app.post("/api/events/verify-otp", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    if (!email || !otp)
-      return res.status(400).json({ error: "Email and OTP are required" });
-
-    const record = await EventOtp.findOne({ email });
-    if (!record) return res.status(400).json({ error: "OTP not found" });
-
-    if (record.expiresAt < new Date())
-      return res.status(400).json({ error: "OTP expired" });
-
-    if (record.otp !== otp)
-      return res.status(400).json({ error: "Invalid OTP" });
-
-    record.verified = true;
-    await record.save();
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Verify OTP error:", err);
-    res.status(500).json({ error: "Failed to verify OTP" });
-  }
-});
-
-
 // ✅ SHIPMENT CONFIRMATION EMAIL (FIXED - NO NESTING)
 app.post("/api/send-shipment-email", async (req, res) => {
   try {
@@ -421,15 +370,15 @@ app.post("/api/send-shipment-email", async (req, res) => {
             </table>
 
             <!-- CTA BUTTON -->
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 32px;">
-              <tr>
-                <td style="text-align: center;">
-                  <a href="http://localhost:8080" style="display: inline-block; padding: 16px 36px; background-color: #1f2937; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                    View My Orders
-                  </a>
-                </td>
-              </tr>
-            </table>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 32px;">
+      <tr>
+        <td style="text-align: center;">
+        <a href="${FRONTEND_URL || "#"}" style="display: inline-block; padding: 16px 36px; background-color: #1f2937; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+          View My Orders
+        </a>
+        </td>
+      </tr>
+      </table>
 
           </td>
         </tr>
@@ -446,8 +395,8 @@ app.post("/api/send-shipment-email", async (req, res) => {
               We'll notify you once your order arrives at your door.
             </p>
             <p style="margin: 0; font-size: 13px; color: #9ca3af;">
-              © 2025 E-Groots. All rights reserved. | 
-              <a href="http://localhost:8080" style="color: #6b7280; text-decoration: underline;">Visit Store</a>
+              © 2025 E-Groots. All rights reserved. |
+              <a href="${FRONTEND_URL || "#"}" style="color: #6b7280; text-decoration: underline;">Visit Store</a>
             </p>
           </td>
         </tr>
@@ -472,18 +421,19 @@ app.post("/api/send-shipment-email", async (req, res) => {
 // 404 HANDLER
 app.use((req, res) => {
   console.log("❌ 404 - Route not found:", req.method, req.path);
-  res.status(404).json({ 
+  res.status(404).json({
     message: "Route not found",
     path: req.path,
-    method: req.method
+    method: req.method,
   });
 });
 
 // START SERVER
 app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📡 API Base: http://localhost:${PORT}/api`);
-  console.log(`💳 Payment Test: http://localhost:${PORT}/api/payment/test`);
-  console.log(`🧪 Test Email: http://localhost:${PORT}/api/test-shipment-email`);
-  console.log(`📧 Shipment Email: http://localhost:${PORT}/api/send-shipment-email ✅`);
+  const baseUrl = BACKEND_URL || `http://localhost:${PORT}`;
+  console.log(`\n🚀 Server running on ${baseUrl}`);
+  console.log(`📡 API Base: ${baseUrl}/api`);
+  console.log(`💳 Payment Test: ${baseUrl}/api/payment/test`);
+  console.log(`🧪 Test Email: ${baseUrl}/api/test-shipment-email`);
+  console.log(`📧 Shipment Email: ${baseUrl}/api/send-shipment-email ✅`);
 });

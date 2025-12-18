@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
@@ -20,11 +21,10 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
-import VerifyOTP from "./pages/VerifyOTP";
 import Terms from "./pages/Terms";
 import EventRegistration from "@/pages/EventRegistration";
 import EventThankYou from "@/pages/EventThankYou";
-import ForgotPassword from "@/pages/ForgotPassword";
+
 
 
 // Google Auth callback
@@ -43,6 +43,12 @@ const AppRoutes = () => {
         element={!isAuthenticated ? <Login /> : <Navigate to="/" replace />}
       />
 
+      {/* ⭐ SIGNUP PAGE */}
+      <Route
+        path="/signup"
+        element={!isAuthenticated ? <Signup /> : <Navigate to="/" replace />}
+      />
+
       {/* ⭐ GOOGLE AUTH CALLBACK */}
       <Route path="/auth/success" element={<AuthSuccess />} />
 
@@ -52,11 +58,16 @@ const AppRoutes = () => {
       <Route path="/product/:id" element={<ProductDetail />} /> {/* ✅ Product Detail Route */}
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/verify-otp" element={<VerifyOTP />} />
       <Route path="/terms" element={<Terms />} />
-      <Route path="/events/register/:id" element={<EventRegistration />} />
+      <Route
+        path="/events/register/:id"
+        element={
+          <ProtectedRoute>
+            <EventRegistration />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/events/thank-you/:id" element={<EventThankYou />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* ⭐ PROTECTED ROUTES - Require login */}
       <Route

@@ -7,54 +7,28 @@ export interface AuthResponse {
   error?: string;
 }
 
-// SIGNUP
+// SIGNUP (Local - Name + Password only)
 export const signupUser = async (
   name: string,
-  email: string,
   password: string
 ): Promise<AuthResponse> => {
   try {
-    const res = await axios.post("/api/auth/signup", { name, email, password });
+    const res = await axios.post("/api/auth/signup", { name, password });
     return res.data;
   } catch (err: any) {
     return { error: err.response?.data?.message || "Signup Failed" };
   }
 };
 
-
-// LOGIN
+// LOGIN (Local - Name + Password)
 export const loginUser = async (
-  email: string,
+  name: string,
   password: string
 ): Promise<AuthResponse> => {
   try {
-    const res = await axios.post("/api/auth/login", { email, password });
+    const res = await axios.post("/api/auth/login", { name, password });
     return res.data;
   } catch (err: any) {
     return { error: err.response?.data?.message || "Login Failed" };
-  }
-};
-// ✅ SEND OTP
-export const sendOtp = async (email: string): Promise<AuthResponse> => {
-  try {
-    const res = await axios.post("/api/otp/send", { email });
-    return res.data;
-  } catch (err: any) {
-    return { error: err.response?.data?.message || "Failed to send OTP" };
-  }
-};
-
-// ✅ VERIFY OTP & REGISTER
-export const verifyOtpAndRegister = async (payload: {
-  name: string;
-  email: string;
-  password: string;
-  otp: string;
-}): Promise<AuthResponse> => {
-  try {
-    const res = await axios.post("/api/otp/verify", payload);
-    return res.data;
-  } catch (err: any) {
-    return { error: err.response?.data?.message || "OTP verification failed" };
   }
 };

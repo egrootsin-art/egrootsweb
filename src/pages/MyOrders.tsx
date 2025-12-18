@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@/api/axiosConfig";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,14 +28,14 @@ const MyOrders = () => {
     if (!user?.email) return;
 
     axios
-      .get(`http://localhost:5000/api/orders/user/${user.email}`)
+      .get(`/api/orders/user/${user.email}`)
       .then((res) => setOrders(res.data.orders))
       .catch((err) => console.error("Order fetch error:", err));
   }, [user]);
 
   const cancelOrder = (id: string) => {
     axios
-      .put(`http://localhost:5000/api/orders/update-status/${id}`, {
+      .put(`/api/orders/update-status/${id}`, {
         status: "cancelled",
       })
       .then(() => {

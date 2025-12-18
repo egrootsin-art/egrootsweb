@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@/api/axiosConfig";
 import {
   Card,
   CardContent,
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await axios.get("http://localhost:5000/api/orders", {
+      const res = await axios.get("/api/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -230,7 +230,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
 
   try {
     const res = await axios.put(
-      `http://localhost:5000/api/orders/update-status/${orderId}`,
+      `/api/orders/update-status/${orderId}`,
       { status: newStatus }
     );
 
@@ -244,7 +244,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
     // ✅ SEND SHIPMENT CONFIRMATION EMAIL when status becomes "Completed"
     if (newStatus.toLowerCase() === "completed") {
       try {
-        await axios.post("http://localhost:5000/api/send-shipment-email", {
+        await axios.post("/api/send-shipment-email", {
           customerInfo: res.data.order.customer,
           items: res.data.order.items,
           total: res.data.order.totalAmount,
@@ -278,7 +278,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
 
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/orders/update-status/${orderToCancel._id}`,
+        `/api/orders/update-status/${orderToCancel._id}`,
         { status: "Cancelled" }
       );
 

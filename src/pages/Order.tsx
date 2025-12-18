@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "@/api/axiosConfig";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -191,20 +191,15 @@ const Order = () => {
 
       // 2) Get Razorpay key
       console.log("🔑 Fetching Razorpay key from backend...");
-      const keyResponse = await axios.get(
-        "http://localhost:5000/api/payment/get-key"
-      );
+      const keyResponse = await axios.get("/api/payment/get-key");
       const razorpayKey = keyResponse.data.key;
       console.log("✅ Razorpay Key received:", razorpayKey);
 
       // 3) Create Razorpay order (GRAND TOTAL in paise)
       console.log("💰 Creating Razorpay order for ₹", grandTotal);
-      const orderResponse = await axios.post(
-        "http://localhost:5000/api/payment/create-order",
-        {
-          amount: Math.round(grandTotal * 100),
-        }
-      );
+      const orderResponse = await axios.post("/api/payment/create-order", {
+        amount: Math.round(grandTotal * 100),
+      });
       console.log("✅ Razorpay order created:", orderResponse.data);
 
       const { id: razorpay_order_id, amount, currency } = orderResponse.data;
@@ -223,14 +218,11 @@ const Order = () => {
           try {
             // 5) Verify payment on backend
             console.log("🔐 Verifying payment signature...");
-            const verifyResponse = await axios.post(
-              "http://localhost:5000/api/payment/verify",
-              {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }
-            );
+            const verifyResponse = await axios.post("/api/payment/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
             console.log("✅ Payment verified:", verifyResponse.data);
 
             // 6) Save order in MongoDB
@@ -256,17 +248,14 @@ const Order = () => {
 
             console.log("📦 Order payload:", orderPayload);
 
-            const res = await axios.post(
-              "http://localhost:5000/api/orders/create",
-              orderPayload
-            );
+            const res = await axios.post("/api/orders/create", orderPayload);
 
             const orderId = res.data.orderId;
             console.log("✅ Order saved! Order ID:", orderId);
 
             // 7) Send confirmation email
             console.log("📧 Sending confirmation email...");
-            await axios.post("http://localhost:5000/api/send-order-email", {
+            await axios.post("/api/send-order-email", {
               customerInfo,
               items: orderPayload.items,
               subtotal,

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import axios from "axios";
+import axios from "@/api/axiosConfig";
 
 export interface Order {
   _id: string;
@@ -34,7 +34,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const fetchOrders = async (email: string) => {
     try {
       setUserEmail(email);
-      const res = await axios.get(`http://localhost:5000/api/orders/user/${email}`);
+      const res = await axios.get(`/api/orders/user/${email}`);
       setOrders(res.data.orders);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
@@ -49,7 +49,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Cancel order
   const cancelOrder = async (orderId: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/orders/${orderId}/cancel`);
+      await axios.put(`/api/orders/${orderId}/cancel`);
       await refreshOrders();
     } catch (err) {
       console.error("Cancel failed:", err);
@@ -59,7 +59,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   // Delete order
   const deleteOrder = async (orderId: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+      await axios.delete(`/api/orders/${orderId}`);
       await refreshOrders();
     } catch (err) {
       console.error("Delete failed:", err);

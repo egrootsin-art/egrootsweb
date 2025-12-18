@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { loginUser, signupUser } from "@/api/auth";
 import axios from "@/api/axiosConfig";
+import { signupUser, loginUser } from "@/api/auth";
 
 interface AuthContextType {
   user: any | null;
   isAuthenticated: boolean;
-  loading: boolean; // ✅ new
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  loading: boolean;
+  signup: (name: string, password: string) => Promise<boolean>;
+  login: (name: string, password: string) => Promise<boolean>;
   logout: () => void;
   setAuthData: (data: { token: string; user: any }) => void;
 }
@@ -24,9 +24,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true); // ✅
+  const [loading, setLoading] = useState(true);
 
-  // hydrate from localStorage on first mount
+  // Hydrate from localStorage on first mount
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -35,12 +35,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
       setUser(JSON.parse(savedUser));
     }
-    setLoading(false); // ✅ auth state resolved
+    setLoading(false);
   }, []);
 
-  // LOGIN
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const res = await loginUser(email, password);
+  // SIGNUP (Local - Name + Password only)
+  const signup = async (name: string, password: string): Promise<boolean> => {
+    const res = await signupUser(name, password);
 
     if (res.token && res.user) {
       localStorage.setItem("token", res.token);
@@ -52,13 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return false;
   };
 
-  // SIGNUP
-  const signup = async (
-    name: string,
-    email: string,
-    password: string
-  ): Promise<boolean> => {
-    const res = await signupUser(name, email, password);
+  // LOGIN (Local - Name + Password)
+  const login = async (name: string, password: string): Promise<boolean> => {
+    const res = await loginUser(name, password);
 
     if (res.token && res.user) {
       localStorage.setItem("token", res.token);
@@ -77,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   };
 
-  // GOOGLE LOGIN SUPPORT
+  // Set auth data after successful Google OAuth callback
   const setAuthData = (data: { token: string; user: any }) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
@@ -90,9 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         user,
         isAuthenticated: !!user,
-        loading, // ✅
-        login,
+        loading,
         signup,
+        login,
         logout,
         setAuthData,
       }}

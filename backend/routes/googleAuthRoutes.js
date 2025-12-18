@@ -1,88 +1,71 @@
 const express = require("express");
-const passport = require("passport");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-require("dotenv").config();
+const passport = require("../config/passport");
 
 const router = express.Router();
 
-// -------------------------
-// GOOGLE STRATEGY
-// -------------------------
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/auth/google/callback",
-      session: false, // ⭐ IMPORTANT
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const email = profile.emails[0].value;
+/**
+ * @route   GET /api/auth/google/login
+ * @desc    Initiate Google OAuth flow
+ * @access  Public
+ */
+router.get("/login", (req, res, next) => {
+  // Extract state parameter (contains form data from signup page)
+  const state = req.query.state || null;
 
-        let user = await User.findOne({ email });
+  // Store state in session for retrieval in callback
+  if (state) {
+    req.session.oauthState = state;
+  }
 
-        if (!user) {
-          user = await User.create({
-            name: profile.displayName,
-            email,
-            picture: profile.photos[0].value,
-            password: null,
-          });
-        }
-
-        // Generate JWT
-        const token = jwt.sign(
-          { userId: user._id },
-          process.env.JWT_SECRET,
-          { expiresIn: "7d" }
-        );
-
-        return done(null, { user, token });
-      } catch (error) {
-        return done(error, null);
-      }
-    }
-  )
-);
-
-// Disable sessions completely
-passport.serializeUser(() => {});
-passport.deserializeUser(() => {});
-
-// -------------------------
-// ROUTES
-// -------------------------
-
-// Step 1: Google Login
-router.get(
-  "/login",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    session: false,
-  })
-);
+    state: state, // Pass state through OAuth flow
+  })(req, res, next);
+});
 
-// Step 2: Google Callback
+/**
+ * @route   GET /api/auth/google/callback
+ * @desc    Google OAuth callback handler
+ * @access  Public
+ */
 router.get(
   "/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:8080/login",
+    failureRedirect: `${FRONTEND_URL}/signup`,
     session: false,
   }),
-  (req, res) => {
-    const { user, token } = req.user;
+  async (req, res) => {
+    try {
+      const { user, token, formData } = req.user; // formData contains name and password from signup form
 
-    const redirectURL =
-      `http://localhost:8080/auth/success?token=${token}` +
-      `&email=${user.email}` +
-      `&name=${user.name}` +
-      `&picture=${user.picture}`;
+      // Log for verification
+      console.log("✅ Google OAuth callback successful:", {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        formDataReceived: !!formData,
+        formName: formData?.name,
+      });
 
-    return res.redirect(redirectURL);
+      // Clear session state if it exists
+      if (req.session && req.session.oauthState) {
+        delete req.session.oauthState;
+      }
+
+      const redirectURL =
+        `${FRONTEND_URL}/auth/success?token=${encodeURIComponent(token)}` +
+        `&name=${encodeURIComponent(user.name)}` +
+        (user.email ? `&email=${encodeURIComponent(user.email)}` : "") +
+        (user.picture ? `&picture=${encodeURIComponent(user.picture)}` : "") +
+        `&authProvider=${encodeURIComponent(user.authProvider)}`;
+
+      return res.redirect(redirectURL);
+    } catch (error) {
+      console.error("❌ Error in Google OAuth callback:", error);
+      return res.redirect(`${FRONTEND_URL}/signup?error=auth_failed`);
+    }
   }
 );
 

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import axios from "axios";
+import axios from "@/api/axiosConfig";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { featuredProducts } from "@/data/products";
@@ -86,12 +86,9 @@ const ProductDetail = () => {
         console.log(`📊 Fetching reviews for: ${id}`);
 
         const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `http://localhost:5000/api/products/${id}/reviews`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`/api/products/${id}/reviews`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         console.log("✅ MongoDB Reviews loaded:", response.data.reviews);
         setReviews(response.data.reviews || []);
@@ -178,7 +175,7 @@ const ProductDetail = () => {
       console.log("📝 Submitting review:", reviewData);
 
       const response = await axios.post(
-        `http://localhost:5000/api/products/${id}/reviews`,
+        `/api/products/${id}/reviews`,
         reviewData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
