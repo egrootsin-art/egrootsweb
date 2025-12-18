@@ -5,10 +5,11 @@ import axios from "@/api/axiosConfig";
 interface AuthContextType {
   user: any | null;
   isAuthenticated: boolean;
+  loading: boolean; // ✅ new
   login: (email: string, password: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  setAuthData: (data: { token: string; user: any }) => void;  // ⭐ Added
+  setAuthData: (data: { token: string; user: any }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,7 +24,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true); // ✅
 
+  // hydrate from localStorage on first mount
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -32,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
       setUser(JSON.parse(savedUser));
     }
+    setLoading(false); // ✅ auth state resolved
   }, []);
 
   // LOGIN
@@ -49,7 +53,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // SIGNUP
-  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     const res = await signupUser(name, email, password);
 
     if (res.token && res.user) {
@@ -69,11 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   };
 
-  // ⭐ GOOGLE LOGIN SUPPORT
+  // GOOGLE LOGIN SUPPORT
   const setAuthData = (data: { token: string; user: any }) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
-
     axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
     setUser(data.user);
   };
@@ -83,10 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         user,
         isAuthenticated: !!user,
+        loading, // ✅
         login,
         signup,
         logout,
-        setAuthData, // ⭐ Export it
+        setAuthData,
       }}
     >
       {children}

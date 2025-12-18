@@ -1,28 +1,25 @@
 import { Product } from "@/components/ProductCard";
-import learnovateInter from "@/assets/BASIC.jpeg";
+import learnovateInter from "@/assets/mini.jpeg";
 import learnovateBasic from "@/assets/INTERMEDIATE.jpeg";
 import linefollower from "@/assets/linefollower.jpeg";
 import mazesolver from "@/assets/mazesolver.jpeg";
-
+import event from "@/assets/codinground.jpeg"
 export const featuredProducts: Product[] = [
   {
     id: "7",
     name: "Coding Challenge Event",
-    price: 1,
-    originalPrice: 119.99,
-    image: learnovateBasic,
+    price: 199,
+    image: event,
     category: "Events",
-    description:
-      "The E-Groots Mini Kit is a compact, all-in-one electronics learning board designed to make robotics, IoT, and sensor-based projects simple and exciting. Powered by an Arduino Nano, it brings together essential modules like PIR motion detection, ultrasonic sensing, DHT22 temperature and humidity monitoring, MPU6050 IMU, gas and touch sensors, a 4-digit display, relay control, and a motor driver—all neatly arranged for easy access without messy wiring. With a built-in breadboard area, switch-controlled power lines, and an ESP expansion slot, the kit is perfect for students, makers, trainers, and STEM programs looking for fast prototyping and practical learning. By eliminating wiring errors and organizing modules intuitively, the E-Groots Mini Kit helps learners focus on creativity, logic-building, and innovation, making it an ideal tool for modern STEM education.",
-    inStock: true,
+    description:"This coding contest is a structured, multi-round challenge designed to assess participants’ problem-solving ability, coding accuracy, and time efficiency, allowing solutions to be written and tested in C++, Python, Java, and JavaScript with support for custom input execution before final submission; submissions are evaluated based on test case success and submission time, with Round 1 solutions manually reviewed by the admin to shortlist eligible participants for Round 2, ensuring a fair, competitive, and transparent assessment process throughout the contest.",    inStock: true,
     isNew: false,
     isFeatured: false,
   },
   {
     id: "1",
     name: "LEARNOVATE KIT INTERMEDIATE",
-    price: 1,
-    originalPrice: 119.99,
+    price: 5499,
+    originalPrice: 7000,
     image: learnovateBasic,
     category: "Educational Kits",
     description:
@@ -34,8 +31,8 @@ export const featuredProducts: Product[] = [
   {
     id: "2",
     name: "LEARNOVATE KIT BASIC",
-    price: 1,
-    originalPrice: 49.99,
+    price: 3499,
+    originalPrice: 5000,
     image: learnovateInter,
     category: "Educational Kits",
     description:
@@ -45,7 +42,7 @@ export const featuredProducts: Product[] = [
   {
     id: "3",
     name: "MAZE GROVER KIT",
-    price: 1,
+    price: 4999,
     image: mazesolver,
     category: "Competition Robots",
     description:
@@ -57,7 +54,7 @@ export const featuredProducts: Product[] = [
   {
     id: "4",
     name: "NANO GLIDER LFR KIT",
-    price: 1,
+    price: 4599,
     image: linefollower,
     category: "Competition Robots",
     description:
@@ -67,12 +64,11 @@ export const featuredProducts: Product[] = [
   {
     id: "5",
     name: "Custom PCB Design Service",
-    price: 1,
     image:
       "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=400&h=400&fit=crop",
     category: "PCB Design Services",
-    description: "Currently not Available.",
-    inStock: false,
+    description: "Contact for customization",
+    inStock: true,
     isFeatured: true,
   },
 ];
@@ -83,14 +79,14 @@ export const categories = [
     description: "Custom circuit board design and manufacturing services",
     image:
       "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
-    productCount: 12,
+    productCount: 1,
   },
   {
     name: "PCB Design Services",
     description: "Custom circuit board design and manufacturing services",
     image:
       "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=300&h=200&fit=crop",
-    productCount: 12,
+   
   },
   {
     name: "Educational Kits",
@@ -98,7 +94,7 @@ export const categories = [
       "Learning kits and development boards for students and educators",
     image:
       "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=300&h=200&fit=crop",
-    productCount: 45,
+    productCount: 2,
   },
   {
     name: "Competition Robots",
@@ -106,7 +102,7 @@ export const categories = [
       "High-performance robotics kits for competitions and advanced projects",
     image:
       "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=200&fit=crop",
-    productCount: 18,
+    productCount: 2,
   },
 ];
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +29,8 @@ declare global {
 
 const Order = () => {
   const navigate = useNavigate();
-  const { items, total, clearCart } = useCart();
+  const [searchParams] = useSearchParams();
+  const { items, total: cartSubtotal, clearCart, isReady } = useCart();
   const { refreshOrders } = useOrder();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -46,6 +47,32 @@ const Order = () => {
     phone: "",
     address: "",
   });
+
+  // Wait for cart to hydrate
+  if (!isReady) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navigation />
+        <div className="container mx-auto text-center py-20">
+          <p className="text-lg text-gray-600">Loading your cart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ GET GRAND TOTAL FROM CART (includes shipping)
+  const urlTotal = parseFloat(searchParams.get("total") || "0");
+  const grandTotal = urlTotal > 0 ? urlTotal : cartSubtotal;
+
+  // ✅ SHIPPING CALCULATION (same as Cart)
+  const calculateShipping = () => {
+    if (items.length === 0) return 0;
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    return itemCount >= 3 ? 0 : 200;
+  };
+
+  const shippingCost = calculateShipping();
+  const subtotal = grandTotal - shippingCost;
 
   // AUTO-FILL EMAIL FROM LOGGED-IN USER
   useEffect(() => {
@@ -131,7 +158,7 @@ const Order = () => {
     return !nameError && !phoneError && !addressError;
   };
 
-  // ✅ PLACE ORDER WITH RAZORPAY (REPLACES DIRECT COD SAVE)
+  // ✅ PLACE ORDER WITH RAZORPAY (Updated amount)
   const handlePlaceOrder = async () => {
     console.log("🚀 Starting payment + order process...");
 
@@ -170,12 +197,12 @@ const Order = () => {
       const razorpayKey = keyResponse.data.key;
       console.log("✅ Razorpay Key received:", razorpayKey);
 
-      // 3) Create Razorpay order (amount in paise)
-      console.log("💰 Creating Razorpay order...");
+      // 3) Create Razorpay order (GRAND TOTAL in paise)
+      console.log("💰 Creating Razorpay order for ₹", grandTotal);
       const orderResponse = await axios.post(
         "http://localhost:5000/api/payment/create-order",
         {
-          amount: Math.round(total * 100),
+          amount: Math.round(grandTotal * 100),
         }
       );
       console.log("✅ Razorpay order created:", orderResponse.data);
@@ -218,7 +245,9 @@ const Order = () => {
                 category: item.category || "Uncategorized",
                 image: item.image || "/placeholder.svg",
               })),
-              totalAmount: total,
+              subtotal: subtotal,
+              shipping: shippingCost,
+              totalAmount: grandTotal,
               paymentMethod: "Razorpay",
               paymentStatus: "Completed",
               razorpay_order_id: response.razorpay_order_id,
@@ -240,7 +269,9 @@ const Order = () => {
             await axios.post("http://localhost:5000/api/send-order-email", {
               customerInfo,
               items: orderPayload.items,
-              total,
+              subtotal,
+              shipping: shippingCost,
+              total: grandTotal,
               paymentMethod: "Razorpay",
             });
 
@@ -315,12 +346,16 @@ const Order = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Navigation />
         <div className="container mx-auto text-center py-20">
-          <h2 className="text-3xl font-bold">Your cart is empty</h2>
+          <h2 className="text-3xl font-bold text-gray-900">
+            Your cart is empty
+          </h2>
           <Link to="/products">
-            <Button className="mt-6">Browse Products</Button>
+            <Button className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white">
+              Browse Products
+            </Button>
           </Link>
         </div>
       </div>
@@ -328,41 +363,47 @@ const Order = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Navigation />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-6 flex items-center">
+        {/* Back + title row */}
+        <div className="flex items-center gap-4 mb-8">
           <Link to="/cart">
-            <Button variant="ghost" className="mr-4">
-              <ArrowLeft className="mr-2" /> Back
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Checkout</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Shopping Cart</h1>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* CUSTOMER INFO CARD */}
-          <Card className="border-border/50">
+          <Card className="border border-emerald-100 shadow-sm">
             <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white-900">
+                Customer Information
+              </CardTitle>
+              <p className="text-sm text-white-600">
                 All fields are required
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* NAME */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="text-sm font-medium text-white-800">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3 top-3 w-5 h-5 text-white-400" />
                   <Input
                     placeholder="Enter your full name"
                     value={customerInfo.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
-                    className={`pl-10 ${errors.name ? "border-red-500" : ""}`}
+                    className={`pl-10 ${
+                      errors.name ? "border-red-500" : ""
+                    }`}
                   />
                 </div>
                 {errors.name && (
@@ -372,9 +413,11 @@ const Order = () => {
 
               {/* EMAIL */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Email Address</label>
+                <label className="text-sm font-medium text-white-800">
+                  Email Address
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-white-400" />
                   <Input
                     type="email"
                     value={customerInfo.email}
@@ -386,11 +429,11 @@ const Order = () => {
 
               {/* PHONE */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="text-sm font-medium text-white-800">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <Phone className="absolute left-3 top-3 w-5 h-5 text-white-400" />
                   <Input
                     type="tel"
                     placeholder="10-digit mobile number"
@@ -414,11 +457,11 @@ const Order = () => {
 
               {/* ADDRESS */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="text-sm font-medium text-white-800">
                   Delivery Address <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <MapPin className="absolute left-3 top-3 w-5 h-5 text-white-400" />
                   <Input
                     placeholder="Enter complete delivery address"
                     value={customerInfo.address}
@@ -433,7 +476,7 @@ const Order = () => {
                 {errors.address && (
                   <p className="text-xs text-red-500">⚠️ {errors.address}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-500">
                   Include street, area, city, and pin code
                 </p>
               </div>
@@ -449,10 +492,10 @@ const Order = () => {
             </CardContent>
           </Card>
 
-          {/* ORDER SUMMARY */}
-          <Card className="border-border/50 sticky top-24">
+          {/* ORDER SUMMARY WITH SHIPPING */}
+          <Card className="border border-emerald-100 shadow-sm sticky top-24">
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle className="text-white-900">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -464,12 +507,14 @@ const Order = () => {
                       className="w-12 h-12 rounded-md object-cover"
                     />
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-medium text-sm text-white-900">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-white-500">
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-white-900">
                       ₹{(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
@@ -478,15 +523,35 @@ const Order = () => {
 
               <Separator />
 
-              <div className="flex justify-between font-bold text-lg">
+              {/* ✅ BREAKDOWN WITH SHIPPING */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-white-900">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-white-900">
+                  <span>Shipping</span>
+                  <span
+                    className={
+                      shippingCost === 0 ? "text-green-600 font-medium" : ""
+                    }
+                  >
+                    {shippingCost === 0 ? "Free" : `₹${shippingCost}`}
+                  </span>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="flex justify-between font-bold text-xl text-white-900">
                 <span>Total</span>
-                <span>₹{total.toFixed(2)}</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
               </div>
 
               <Button
                 onClick={handlePlaceOrder}
                 disabled={isProcessing}
-                className="w-full"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                 size="lg"
               >
                 {isProcessing ? (
@@ -497,14 +562,13 @@ const Order = () => {
                 ) : (
                   <>
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    Place Order & Pay
+                    Pay ₹{grandTotal.toFixed(2)} & Place Order
                   </>
                 )}
               </Button>
 
-              <p className="text-xs text-muted-foreground text-center">
-                Online payment via Razorpay. Cash on Delivery can be added as a
-                separate option if needed.
+              <p className="text-xs text-gray-500 text-center">
+                Secure payment via Razorpay. Cash on Delivery available soon.
               </p>
             </CardContent>
           </Card>

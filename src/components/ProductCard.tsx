@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 export interface Product {
   id: string;
   name: string;
-  price: number;
+  price?: number;
   originalPrice?: number;
   image: string;
   category: string;

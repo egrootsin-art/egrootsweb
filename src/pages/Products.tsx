@@ -74,16 +74,16 @@ const Products = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F1FFF7]">
       <Navigation />
       
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-br from-primary/10 to-secondary/10">
+      <section className="py-16 bg-[#222523]">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Our <span className="text-primary">Products</span>
-            </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-4 sm:mb-6 leading-tight">
+            Our <span className="text-green-600 px-2 py-1 rounded-md font-bold block sm:inline">Products</span>
+          </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Discover innovative electronics, robotics kits, and educational tools designed to empower the next generation of innovators.
             </p>

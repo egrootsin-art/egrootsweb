@@ -12,9 +12,10 @@ router.post("/events/register", async (req, res) => {
     if (!eventId || !eventName || !name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
+    
+    
 
     const registration = await Participant.create({
-      
       name,
       email,
       password,

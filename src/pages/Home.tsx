@@ -20,7 +20,7 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="gradient-card border-b border-border/50 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className=" mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Button asChild variant="ghost" size="sm" className="tech-hover">

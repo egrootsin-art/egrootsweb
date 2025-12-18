@@ -46,7 +46,7 @@ const Navigation = () => {
 
   return (
     <nav className="bg-white sticky top-0 z-50 border-b border-gray-200/20">
-      <div className="container mx-auto px-4">
+      <div className=" mx-auto px-4">
         {/* Top bar */}
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

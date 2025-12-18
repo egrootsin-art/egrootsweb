@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import ProductCard from "@/components/ProductCard";
@@ -5,38 +6,162 @@ import Newsletter from "@/components/Newsletter";
 import Testimonials from "@/components/Testimonials";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { featuredProducts, categories } from "@/data/products";
+import { featuredProducts } from "@/data/products";
 import { ArrowRight, Package, Users, Award, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
+  const [openItem, setOpenItem] = useState<"STEM" | "STEAM" | "STREAM" | null>("STEM");
+
+  const toggleItem = (item: "STEM" | "STEAM" | "STREAM") => {
+    setOpenItem(prev => (prev === item ? null : item));
+  };
+
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
       <Navigation />
       <HeroSection />
 
-      
+      {/* STREAM SECTION – dropdown + empty blue boxes */}
+      <section className="bg-[#F1FFF7] pt-16 pb-20">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Left narrative */}
+          <div>
+            <h3 className="text-sm md:text-base font-semibold tracking-[0.18em] uppercase text-[#26A044] mb-3">
+              We can’t perform a day‑to‑day activity without STREAM
+            </h3>
+            <p className="text-sm md:text-base text-slate-700 leading-relaxed">
+              The limitation with classic STEM education is that it follows the
+              same learn–demonstrate–forget model. It does not reflect the
+              intelligence of the learner, but the engagement model and the
+              outcome.
+            </p>
+            <p className="mt-4 text-sm md:text-base text-slate-700 leading-relaxed">
+              At E‑Groots, STREAM brings in key differentiators such as{" "}
+              <span className="font-semibold text-slate-900">PLAY</span> with
+              science and art,{" "}
+              <span className="font-semibold text-slate-900">PRACTICE</span> with
+              engineering and technology, and{" "}
+              <span className="font-semibold text-slate-900">PROGRESS</span>{" "}
+              through research and innovation.
+            </p>
+          </div>
 
-      {/* Featured Products */}
-      <section className="py-16 bg-muted/30">
+          {/* Right: STEM / STEAM / STREAM accordion */}
+          <div className="space-y-3">
+            {/* STEM */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleItem("STEM")}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  {/* Empty blue box */}
+                  <div className="w-10 h-10 rounded-md bg-[#15315B]" />
+                  <span className="font-semibold text-slate-900 text-sm md:text-base">
+                    STEM
+                  </span>
+                </div>
+                <span className="text-xl leading-none text-slate-400">
+                  {openItem === "STEM" ? "−" : "+"}
+                </span>
+              </button>
+              {openItem === "STEM" && (
+                <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-700">
+                  Science, Technology, Engineering, Math – a strong technical
+                  foundation but often limited in creativity, research and
+                  application.
+                </div>
+              )}
+            </div>
+
+            {/* STEAM */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleItem("STEAM")}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-md bg-[#15315B]" />
+                  <span className="font-semibold text-slate-900 text-sm md:text-base">
+                    STEAM
+                  </span>
+                </div>
+                <span className="text-xl leading-none text-slate-400">
+                  {openItem === "STEAM" ? "−" : "+"}
+                </span>
+              </button>
+              {openItem === "STEAM" && (
+                <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-700">
+                  Adds Arts to STEM, encouraging creative expression and
+                  design‑thinking alongside technical skills.
+                </div>
+              )}
+            </div>
+
+            {/* STREAM */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleItem("STREAM")}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-md bg-[#15315B]" />
+                  <span className="font-semibold text-slate-900 text-sm md:text-base">
+                    STREAM
+                  </span>
+                </div>
+                <span className="text-xl leading-none text-slate-400">
+                  {openItem === "STREAM" ? "−" : "+"}
+                </span>
+              </button>
+              {openItem === "STREAM" && (
+                <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-700">
+                  Science, Technology, Research, Engineering, Arts and Math –
+                  emphasising experimentation, data and innovation‑driven
+                  projects.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* STREAM formula heading */}
+        <div className="max-w-6xl mx-auto px-4 mt-16 text-center">
+          <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#26A044] mb-3 uppercase">
+            STREAM: beyond STEM and STEAM education
+          </h3>
+          <p className="text-sm md:text-base font-medium text-slate-800">
+            Science + Technology + Research + Engineering + Arts + Math
+          </p>
+        </div>
+      </section>
+
+      {/* Featured Products – same background */}
+      <section className="py-16 bg-[#F1FFF7]">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Featured <span className="text-primary">Products</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+                Featured <span className="text-primary">products</span>
               </h2>
-              <p className="text-lg text-muted-foreground">
-                Handpicked innovative products perfect for students and tech enthusiasts
+              <p className="text-base md:text-lg text-slate-600 max-w-xl">
+                Classroom‑ready electronics, robotics and fabrication tools
+                selected for reliability, documentation and long‑term use.
               </p>
             </div>
             <Button
               asChild
-              className="tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Link to="/products">
-                View All Products
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <span className="flex items-center">
+                  View all products
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </span>
               </Link>
             </Button>
           </div>
@@ -48,70 +173,85 @@ const Index = () => {
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <ProductCard product={product} />
+                <div className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <ProductCard product={product} />
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why Choose E-Groots */}
-      <section className="py-16">
+      {/* Why Choose E‑Groots – same background */}
+      <section className="py-16 bg-[#F1FFF7]">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose <span className="text-primary">E-Groots?</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+              Why choose <span className="text-primary">E‑Groots?</span>
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We're more than just an electronics store - we're your partner in innovation and learning.
+            <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+              A focused catalog, engineering‑first support and infrastructure
+              designed for schools, labs and high‑performance student teams.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="tech-hover gradient-card border-border/50 text-center">
+            <Card className="text-center border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Package className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Quality Products</h3>
-                <p className="text-sm text-muted-foreground">
-                  Carefully curated components and kits from trusted manufacturers
+                <h3 className="font-semibold text-slate-900 mb-2">
+                  Quality hardware
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Components and kits sourced from trusted partners and
+                  validated in real projects.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="tech-hover gradient-card border-border/50 text-center">
+            <Card className="text-center border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-accent" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Student Focused</h3>
-                <p className="text-sm text-muted-foreground">
-                  Special pricing and resources designed for educational use
+                <h3 className="font-semibold text-slate-900 mb-2">
+                  Student‑centric design
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Kits, pricing and content tailored for classrooms, clubs and
+                  hackathons.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="tech-hover gradient-card border-border/50 text-center">
+            <Card className="text-center border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Award className="w-8 h-8 text-secondary" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Expert Support</h3>
-                <p className="text-sm text-muted-foreground">
-                  Technical guidance and project assistance from our engineering team
+                <h3 className="font-semibold text-slate-900 mb-2">
+                  Engineering support
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Guidance from engineers experienced in embedded systems,
+                  robotics and power electronics.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="tech-hover gradient-card border-border/50 text-center">
+            <Card className="text-center border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow bg-white">
               <CardContent className="p-6">
-                <div className="w-16 h-16 bg-tech-orange/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Zap className="w-8 h-8 text-tech-orange" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Fast Delivery</h3>
-                <p className="text-sm text-muted-foreground">
-                  Quick shipping to get your projects started without delay
+                <h3 className="font-semibold text-slate-900 mb-2">
+                  Reliable logistics
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Predictable dispatch and tracking so project timelines stay
+                  under control.
                 </p>
               </CardContent>
             </Card>
@@ -132,14 +272,18 @@ const Index = () => {
                   <span className="text-white font-bold text-sm">EG</span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground">E-Groots</h3>
+                  <h3 className="text-lg font-bold text-foreground">E‑Groots</h3>
                   <p className="text-xs text-muted-foreground">
-                    Empowering Future Innovators
+                    Empowering future innovators
                   </p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Your trusted partner for electronics, 3D printing, and robotics education.
+                Door No. 1/144-1, Mahadhanapuram, Krishnarayapuram Taluk, Karur –
+                639102.
+              </p>
+              <p className="text-sm text-muted-foreground">
+               GST.No : 33ICSPP2555M1ZS
               </p>
             </div>
 
@@ -153,17 +297,17 @@ const Index = () => {
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Educational Kits
+                    Educational kits
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Competition Robots
+                    Competition robots
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    PCB Design
+                    PCB design
                   </a>
                 </li>
               </ul>
@@ -184,12 +328,12 @@ const Index = () => {
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Community Forum
+                    Community forum
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Contact Us
+                    Contact us
                   </a>
                 </li>
               </ul>
@@ -200,7 +344,7 @@ const Index = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    About Us
+                    About us
                   </a>
                 </li>
                 <li>
@@ -210,12 +354,12 @@ const Index = () => {
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Privacy Policy
+                    Privacy policy
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-primary transition-colors">
-                    Terms of Service
+                    Terms of service
                   </a>
                 </li>
               </ul>
@@ -224,7 +368,8 @@ const Index = () => {
 
           <div className="border-t border-border/50 mt-8 pt-8 text-center">
             <p className="text-sm text-muted-foreground">
-              © 2024 E-Groots. All rights reserved. Built for the next generation of innovators.
+              © {new Date().getFullYear()} E‑Groots. All rights reserved. Built
+              for the next generation of engineers and makers.
             </p>
           </div>
         </div>

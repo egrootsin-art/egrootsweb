@@ -22,7 +22,7 @@ import {
 
 const MyOrders = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -74,30 +74,46 @@ const MyOrders = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "text-accent";
+        return "text-emerald-600";
       case "pending":
-        return "text-tech-orange";
+        return "text-orange-500";
       case "failed":
-        return "text-destructive";
+        return "text-red-600";
       case "cancelled":
-        return "text-muted-foreground";
+        return "text-gray-500";
       default:
-        return "text-muted-foreground";
+        return "text-gray-500";
     }
   };
 
   if (!orders || orders.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-white">
         <Navigation />
+        {/* Hero bar to match other pages */}
+        <section className="py-12 bg-[#202322]">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-3xl md:text-5xl font-bold text-[#22c55e] mb-2">
+              My Orders
+            </h1>
+            <p className="text-gray-300">
+              Track all your purchases and their delivery status.
+            </p>
+          </div>
+        </section>
+
         <div className="container mx-auto px-4 py-16 text-center">
-          <ShoppingBag className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
-          <h2 className="text-3xl font-bold text-foreground mb-4">No Orders Yet</h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            No Orders Yet
+          </h2>
+          <p className="text-lg text-gray-600 mb-8">
             You haven't placed any orders yet.
           </p>
           <Link to="/products">
-            <Button className="bg-primary text-primary-foreground">Start Shopping</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              Start Shopping
+            </Button>
           </Link>
         </div>
       </div>
@@ -105,18 +121,32 @@ const MyOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Navigation />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">My Orders</h1>
 
+      {/* Top hero same as other pages */}
+      <section className="py-12 bg-[#202322]">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold text-[#22c55e] mb-2">
+            My Orders
+          </h1>
+          <p className="text-gray-300">
+            View your recent purchases and manage order status.
+          </p>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
         <div className="space-y-6">
           {orders.map((order: any) => (
-            <Card key={order._id} className="gradient-card border-border/50">
+            <Card
+              key={order._id}
+              className="border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300"
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-white-900">
+                    <Package className="w-5 h-5 text-emerald-600" />
                     <span>Order #{order._id.slice(-6)}</span>
                   </CardTitle>
 
@@ -128,7 +158,6 @@ const MyOrders = () => {
                       {order.status.toUpperCase()}
                     </Badge>
 
-                    {/* ✅ ONLY SHOW CANCEL BUTTON FOR PENDING ORDERS */}
                     {order.status === "pending" && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -147,7 +176,7 @@ const MyOrders = () => {
                           <AlertDialogFooter>
                             <AlertDialogCancel>No</AlertDialogCancel>
                             <AlertDialogAction
-                              className="bg-orange-600 text-white"
+                              className="bg-orange-600 text-white hover:bg-orange-700"
                               onClick={() => cancelOrder(order._id)}
                             >
                               Yes, Cancel
@@ -159,13 +188,13 @@ const MyOrders = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-4 text-sm text-muted-foreground mt-2">
+                <div className="flex gap-4 text-sm text-gray-600 mt-2">
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 text-gray-500" />
                     {formatDate(order.createdAt)}
                   </span>
                   <span className="flex items-center gap-1">
-                    <CreditCard className="w-4 h-4" />
+                    <CreditCard className="w-4 h-4 text-gray-500" />
                     {order.paymentMethod}
                   </span>
                 </div>
@@ -177,7 +206,7 @@ const MyOrders = () => {
                     order.items.map((item: any, index: number) => (
                       <div
                         key={index}
-                        className="flex items-center gap-4 p-3 rounded-lg bg-muted/30"
+                        className="flex items-center gap-4 p-3 rounded-lg bg-gray-50"
                       >
                         <img
                           src={item.image}
@@ -185,41 +214,49 @@ const MyOrders = () => {
                           className="w-16 h-16 object-cover rounded-lg"
                         />
                         <div className="flex-1">
-                          <h4 className="font-medium">{item.name}</h4>
-                          <p className="text-sm text-muted-foreground">{item.category}</p>
-                          <p className="text-sm mt-1">
+                          <h4 className="font-medium text-gray-900">
+                            {item.name}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {item.category}
+                          </p>
+                          <p className="text-sm mt-1 text-gray-700">
                             Qty: {item.quantity} — ₹{item.price}
                           </p>
                         </div>
-                        <p className="font-bold text-right">
+                        <p className="font-bold text-right text-gray-900">
                           ₹{item.quantity * item.price}
                         </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-muted-foreground">No items in this order.</p>
+                    <p className="text-gray-500">No items in this order.</p>
                   )}
                 </div>
 
-                <div className="flex justify-between pt-4 border-t">
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex justify-between pt-4 border-t border-gray-200">
+                  <span className="text-gray-600 text-sm">
                     {order.items?.length || 0} items
                   </span>
-                  <span className="text-xl font-bold">₹{order.totalAmount}</span>
+                  <span className="text-xl font-bold text-gray-900">
+                    ₹{order.totalAmount}
+                  </span>
                 </div>
 
-                <div className="mt-4 p-3 rounded-lg bg-muted/20 border">
-                  <h5 className="font-medium mb-2">Delivery Information</h5>
-                  <p className="text-sm">
+                <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <h5 className="font-medium mb-2 text-gray-900">
+                    Delivery Information
+                  </h5>
+                  <p className="text-sm text-gray-700">
                     <strong>Name:</strong> {order.customer.name}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-sm text-gray-700">
                     <strong>Email:</strong> {order.customer.email}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-sm text-gray-700">
                     <strong>Phone:</strong> {order.customer.phone}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-sm text-gray-700">
                     <strong>Address:</strong> {order.customer.address}
                   </p>
                 </div>
@@ -230,7 +267,9 @@ const MyOrders = () => {
 
         <div className="text-center mt-12">
           <Link to="/products">
-            <Button variant="outline">Continue Shopping</Button>
+            <Button variant="outline" className="border-emerald-500 text-emerald-700">
+              Continue Shopping
+            </Button>
           </Link>
         </div>
       </div>

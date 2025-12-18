@@ -33,16 +33,17 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    // ✅ Whole page base is white
+    <div className="min-h-screen bg-white">
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-primary/10 to-accent/10">
+      {/* ✅ Top hero: black like Products */}
+      <section className="py-12 sm:py-16 bg-[#202322]">
         <div className="container mx-auto px-4 sm:px-6 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 sm:mb-6 leading-tight">
-            About <span className="text-primary">E-Groots</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#22c55e] mb-4 sm:mb-6 leading-tight">
+            About E-Groots
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-2">
+          <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed px-2">
             We're on a mission to empower the next generation of innovators
             through accessible, high-quality electronics and educational
             technology.
@@ -50,22 +51,22 @@ const About = () => {
         </div>
       </section>
 
-      {/* Our Story + Video */}
-      <section className="py-12 sm:py-16">
+      {/* Our Story + Video – on white */}
+      <section className="py-12 sm:py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#16a34a] mb-4 sm:mb-6">
                 Our Story
               </h2>
-              <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-800 mb-4 sm:mb-6 leading-relaxed">
                 Founded in 2020 by a group of passionate educators and
                 engineers, E-Groots began with a simple observation: students
                 were eager to learn about technology, but accessing quality
                 components and educational resources was often difficult and
                 expensive.
               </p>
-              <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-800 mb-4 sm:mb-6 leading-relaxed">
                 We started in a small workshop, carefully curating kits and
                 components that would make learning electronics, 3D printing,
                 and robotics both affordable and engaging. Today, we serve
@@ -81,9 +82,9 @@ const About = () => {
                 loop
                 muted
                 playsInline
-                className="rounded-lg shadow-lg w-full h-64 sm:h-80 md:h-96 object-cover"
+                className="rounded-lg shadow-lg w-full h-64 sm:h-80 md:h-96 object-cover border-4 border-[#16a34a]"
               />
-              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-primary text-primary-foreground p-3 sm:p-4 rounded-lg shadow-lg">
+              <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-[#22c55e] text-white p-3 sm:p-4 rounded-lg shadow-lg">
                 <Rocket className="w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             </div>
@@ -91,17 +92,17 @@ const About = () => {
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="py-12 sm:py-16 bg-muted/30">
+      {/* Mission & Vision – white cards on light green tint if you want, or keep white */}
+      <section className="py-12 sm:py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <Card className="gradient-card border-border/50">
+            <Card className="border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300">
               <CardContent className="p-6 sm:p-8">
-                <Target className="w-10 h-10 sm:w-12 sm:h-12 text-primary mb-3 sm:mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
+                <Target className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 p-3 rounded-xl mb-3 sm:mb-4" />
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
                   Our Mission
                 </h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                   To democratize access to cutting-edge technology education by
                   providing affordable, high-quality components and
                   comprehensive learning resources that inspire creativity and
@@ -110,16 +111,16 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="gradient-card border-border/50">
+            <Card className="border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300">
               <CardContent className="p-6 sm:p-8">
-                <Lightbulb className="w-10 h-10 sm:w-12 sm:h-12 text-accent mb-3 sm:mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
+                <Lightbulb className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 p-3 rounded-xl mb-3 sm:mb-4" />
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
                   Our Vision
                 </h3>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                   A world where every student has the tools and knowledge to
                   become a technology creator, not just a consumer, fostering a
-                  generation of problem-solvers who will tackle tomorrow's
+                  generation of problem-solvers who will tackle tomorrow&apos;s
                   greatest challenges.
                 </p>
               </CardContent>
@@ -128,14 +129,14 @@ const About = () => {
         </div>
       </section>
 
-      {/* Our Values */}
-      <section className="py-12 sm:py-16">
+      {/* Our Values – still on white, with green accents */}
+      <section className="py-12 sm:py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#16a34a] mb-3 sm:mb-4">
               Our Values
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
+            <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto px-2">
               These core principles guide everything we do at E-Groots.
             </p>
           </div>
@@ -144,16 +145,16 @@ const About = () => {
             {values.map((value) => (
               <Card
                 key={value.title}
-                className="gradient-card border-border/50 text-center tech-hover"
+                className="border border-emerald-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-center"
               >
                 <CardContent className="p-5 sm:p-6">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4 text-primary">
-                    {value.icon}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <span className="text-emerald-600">{value.icon}</span>
                   </div>
-                  <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2">
+                  <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-2">
                     {value.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
                     {value.description}
                   </p>
                 </CardContent>
