@@ -7,7 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { featuredProducts } from "@/data/products";
-import { ArrowRight, Package, Users, Award, Zap } from "lucide-react";
+import { ArrowRight, Package, Users, Award, Zap, Instagram, MessageCircle, Linkedin, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -16,6 +16,34 @@ const Index = () => {
   const toggleItem = (item: "STEM" | "STEAM" | "STREAM") => {
     setOpenItem(prev => (prev === item ? null : item));
   };
+
+  // Social media links - update with your actual links
+  const socialLinks = [
+    {
+      name: "Instagram",
+      href: "https://www.instagram.com/egroots.in?igsh=MXJla2V2NXA2NHRuZA%3D%3D&utm_source=qr",
+      icon: Instagram,
+      color: "bg-gradient-to-r from-pink-500 to-purple-500"
+    },
+    {
+      name: "WhatsApp",
+      href: "https://wa.me/918015221905",
+      icon: MessageCircle,
+      color: "bg-green-500"
+    },
+    {
+      name: "LinkedIn",
+      href: "https://www.linkedin.com/company/e-groots/",
+      icon: Linkedin,
+      color: "bg-blue-700"
+    },
+    {
+      name: "YouTube",
+      href: "https://www.youtube.com/@E-GROOTS",
+      icon: Youtube,
+      color: "bg-red-500"
+    }
+  ];
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col">
@@ -28,7 +56,7 @@ const Index = () => {
           {/* Left narrative */}
           <div>
             <h3 className="text-sm md:text-base font-semibold tracking-[0.18em] uppercase text-[#26A044] mb-3">
-              We can’t perform a day‑to‑day activity without STREAM
+              We can't perform a day‑to‑day activity without STREAM
             </h3>
             <p className="text-sm md:text-base text-slate-700 leading-relaxed">
               The limitation with classic STEM education is that it follows the
@@ -265,7 +293,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="gradient-card border-t border-border/50 py-12 mt-auto">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
@@ -283,7 +311,7 @@ const Index = () => {
                 639102.
               </p>
               <p className="text-sm text-muted-foreground">
-               GST.No : 33ICSPP2555M1ZS
+                GST.No : 33ICSPP2555M1ZS
               </p>
             </div>
 
@@ -366,11 +394,37 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="border-t border-border/50 mt-8 pt-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} E‑Groots. All rights reserved. Built
-              for the next generation of engineers and makers.
-            </p>
+          {/* Social Media Section */}
+          <div className="border-t border-border/50 pt-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-6 mb-6">
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-muted-foreground">
+                  © {new Date().getFullYear()} E‑Groots. All rights reserved. Built
+                  for the next generation of engineers and makers.
+                </p>
+              </div>
+              
+              {/* Social Media Icons */}
+              <div className="flex items-center gap-2">
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group"
+                      aria-label={social.name}
+                    >
+                      <div className={`w-10 h-10 ${social.color} rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 group-hover:-translate-y-0.5`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </footer>
