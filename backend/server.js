@@ -28,14 +28,27 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // CORS
+const allowedOrigins = [
+  "http://localhost:8080",
+  "http://localhost:5173",
+  "https://egroots-innovate-shop-g20a1zc5z-bharanis-projects-b9e51904.vercel.app",
+  "https://egroots-innovate-shop-production.up.railway.app"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for this origin"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-app.options("*", cors());
 
 // DATABASE
 mongoose
