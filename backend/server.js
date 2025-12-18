@@ -31,7 +31,8 @@ app.use(passport.session());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:8080",
-  "https://egroots-first.vercel.app",
+  "https://egroots-first-7qwv5gfu0-bharanis-projects-b9e51904.vercel.app",
+  "https://egroots-innovate-shop-production.up.railway.app",
 ];
 
 app.use(
