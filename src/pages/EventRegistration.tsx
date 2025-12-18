@@ -232,7 +232,7 @@ const EventRegistration = () => {
                     try {
                       setLoading(true);
                       await axios.post(
-                        "http://localhost:5000/api/events/send-otp",
+                        "http://egroots-innovate-shop-production.up.railway.app/api/events/send-otp",
                         { email }
                       );
                       setOtpSent(true);
