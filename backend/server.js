@@ -29,19 +29,20 @@ app.use(passport.session());
 
 // CORS
 const allowedOrigins = [
-  "http://localhost:8080",
   "http://localhost:5173",
-  "https://egroots-innovate-shop-g20a1zc5z-bharanis-projects-b9e51904.vercel.app",
-  "https://egroots-innovate-shop-production.up.railway.app"
+  "http://localhost:8080",
+  "https://egroots-first.vercel.app",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true); // allow Postman / server calls
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("CORS not allowed for this origin"));
+        console.log("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
@@ -49,6 +50,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// ✅ REQUIRED for preflight
+app.options("*", cors());
+
 
 // DATABASE
 mongoose
