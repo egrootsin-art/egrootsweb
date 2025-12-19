@@ -1,6 +1,6 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const { handleGoogleAuthWithFormData } = require("../controllers/authController");
+const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthController");
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
 

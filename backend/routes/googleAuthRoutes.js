@@ -1,5 +1,6 @@
 const express = require("express");
 const passport = require("../config/passport");
+// const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthController"); // Not used here directly
 
 const router = express.Router();
 
@@ -64,7 +65,8 @@ router.get(
       return res.redirect(redirectURL);
     } catch (error) {
       console.error("❌ Error in Google OAuth callback:", error);
-      return res.redirect(`${FRONTEND_URL}/signup?error=auth_failed`);
+      const errorMessage = encodeURIComponent(error.message || "Authentication failed");
+      return res.redirect(`${FRONTEND_URL}/signup?error=${errorMessage}`);
     }
   }
 );

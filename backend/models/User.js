@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: "local",
     },
+    googleVerified: { type: Boolean, default: false },
     picture: { type: String, required: false }, // Optional profile picture from Google
     googleId: { type: String, required: false }, // Google user ID
   },

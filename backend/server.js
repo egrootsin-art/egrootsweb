@@ -47,7 +47,11 @@ if (FRONTEND_URL) {
 
 // Local development origins only for non-production
 if (NODE_ENV !== "production") {
-  allowedOrigins.push("http://localhost:5173", "http://localhost:8080");
+  allowedOrigins.push(
+    "http://localhost:5173", 
+    "http://localhost:8080",
+    "http://localhost:5000" // ✅ Allow self-origin if needed
+  );
 }
 
 app.use(

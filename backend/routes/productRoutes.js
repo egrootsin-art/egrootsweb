@@ -4,7 +4,7 @@ const Review = require("../models/Review");
 const authenticate = require("../middleware/auth");
 
 // ✅ GET REVIEWS
-router.get("/:id/reviews", authenticate, async (req, res) => {
+router.get("/:id/reviews", async (req, res) => {
   try {
     console.log(`📊 Fetching reviews for product: ${req.params.id}`);
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const authenticate = require('../middleware/auth');
 
 // ===============================
 // 📌 CREATE NEW ORDER
@@ -69,7 +70,7 @@ router.get("/user/:email", async (req, res) => {
 // ===============================
 // 🔄 UPDATE ORDER STATUS
 // ===============================
-router.put('/update-status/:id', async (req, res) => {
+router.put('/update-status/:id', authenticate, async (req, res) => {
   try {
     const { status } = req.body;
 

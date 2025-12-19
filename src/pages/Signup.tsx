@@ -1,15 +1,17 @@
-import React, { useState } from "react";
-import { Eye, EyeOff, Lock, User, Chrome } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Eye, EyeOff, Lock, User, Chrome, Mail } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface FormData {
   name: string;
+  email: string;
   password: string;
   confirmPassword: string;
 }
 
 interface FormErrors {
   name?: string;
+  email?: string;
   password?: string;
   confirmPassword?: string;
   general?: string;
@@ -17,6 +19,7 @@ interface FormErrors {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,6 +27,7 @@ const Signup: React.FC = () => {
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -33,11 +37,37 @@ const Signup: React.FC = () => {
   const backendUrl =
     import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
+  // Check for errors from redirect (e.g. email mismatch)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorMsg = params.get("error");
+    if (errorMsg) {
+      setErrors((prev) => ({ ...prev, general: decodeURIComponent(errorMsg) }));
+      // Clear the URL param
+      navigate("/signup", { replace: true });
+    }
+    
+    // Restore form data from session storage if returning from failed attempt
+    const storedData = sessionStorage.getItem("signupFormData");
+    if (storedData) {
+      try {
+        const parsed = JSON.parse(storedData);
+        setFormData(prev => ({ ...prev, ...parsed }));
+      } catch (e) {
+        console.error("Failed to parse stored form data");
+      }
+    }
+  }, [location.search, navigate]);
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.name || formData.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
+    }
+
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
@@ -80,6 +110,7 @@ const Signup: React.FC = () => {
     // Prepare form data
     const formDataToStore = {
       name: formData.name.trim(),
+      email: formData.email.trim(),
       password: formData.password,
     };
 
@@ -103,6 +134,7 @@ const Signup: React.FC = () => {
   // Check if form is valid for button enablement
   const isFormValid =
     formData.name.trim().length >= 2 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
     formData.password.length >= 6 &&
     formData.confirmPassword === formData.password;
 
@@ -141,6 +173,26 @@ const Signup: React.FC = () => {
             </div>
             {errors.name && (
               <p className="text-red-400 text-xs mt-1">{errors.name}</p>
+            )}
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label className="text-gray-200 text-sm">Email</label>
+            <div className="relative mt-1">
+              <Mail className="absolute left-3 top-3 text-gray-300 h-5 w-5" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full pl-10 py-3 rounded-lg bg-black/30 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+            {errors.email && (
+              <p className="text-red-400 text-xs mt-1">{errors.email}</p>
             )}
           </div>
 
