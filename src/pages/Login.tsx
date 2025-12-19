@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Lock, User, Chrome } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Chrome } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface FormData {
-  name: string;
+  email: string;
   password: string;
 }
 
 interface FormErrors {
-  name?: string;
+  email?: string;
   password?: string;
   general?: string;
 }
@@ -22,7 +22,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
-    name: "",
+    email: "",
     password: "",
   });
 
@@ -34,8 +34,11 @@ const Login: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.name || formData.name.trim().length < 2) {
-      newErrors.name = "Name is required";
+    if (
+      !formData.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ) {
+      newErrors.email = "Valid email is required";
     }
 
     if (!formData.password) {
@@ -71,12 +74,12 @@ const Login: React.FC = () => {
     setErrors({});
 
     try {
-      const success = await login(formData.name.trim(), formData.password);
+      const success = await login(formData.email.trim(), formData.password);
 
       if (success) {
         navigate("/");
       } else {
-        setErrors({ general: "Invalid name or password" });
+        setErrors({ general: "Invalid email or password" });
       }
     } catch (err) {
       setErrors({ general: "Something went wrong. Please try again." });
@@ -118,23 +121,23 @@ const Login: React.FC = () => {
             </p>
           )}
 
-          {/* Name Field */}
+          {/* Email Field */}
           <div>
-            <label className="text-gray-200 text-sm">Name</label>
+            <label className="text-gray-200 text-sm">Email</label>
             <div className="relative mt-1">
-              <User className="absolute left-3 top-3 text-gray-300 h-5 w-5" />
+              <Mail className="absolute left-3 top-3 text-gray-300 h-5 w-5" />
               <input
-                type="text"
-                name="name"
-                value={formData.name}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 className="w-full pl-10 py-3 rounded-lg bg-black/30 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Your name"
+                placeholder="Your email"
                 required
               />
             </div>
-            {errors.name && (
-              <p className="text-red-400 text-xs mt-1">{errors.name}</p>
+            {errors.email && (
+              <p className="text-red-400 text-xs mt-1">{errors.email}</p>
             )}
           </div>
 

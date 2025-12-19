@@ -11,25 +11,25 @@ const generateToken = (userId) => {
 };
 
 /**
- * Local Signup - Name + Password only (no email)
+ * Local Signup - Name + Email + Password
  */
 exports.localSignup = async (req, res) => {
   try {
-    const { name, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Validation
-    if (!name || !password) {
-      return res.status(400).json({ message: "Name and password are required" });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email and password are required" });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
-    // Check if user with same name already exists (local auth)
-    const exists = await User.findOne({ name, authProvider: "local" });
+    // Check if user with same email already exists
+    const exists = await User.findOne({ email });
     if (exists) {
-      return res.status(400).json({ message: "User with this name already exists" });
+      return res.status(400).json({ message: "User with this email already exists" });
     }
 
     // Hash password
@@ -38,8 +38,10 @@ exports.localSignup = async (req, res) => {
     // Create user
     const newUser = await User.create({
       name,
+      email,
       password: hashedPassword,
       authProvider: "local",
+      googleVerified: false,
     });
 
     // Generate token
@@ -51,6 +53,7 @@ exports.localSignup = async (req, res) => {
       user: {
         id: newUser._id,
         name: newUser.name,
+        email: newUser.email,
         authProvider: newUser.authProvider,
       },
     });
@@ -61,19 +64,19 @@ exports.localSignup = async (req, res) => {
 };
 
 /**
- * Local Login - Name + Password
+ * Local Login - Email + Password
  */
 exports.localLogin = async (req, res) => {
   try {
-    const { name, password } = req.body;
+    const { email, password } = req.body;
 
     // Validation
-    if (!name || !password) {
-      return res.status(400).json({ message: "Name and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Find user by name (local auth only)
-    const user = await User.findOne({ name, authProvider: "local" });
+    // Find user by email
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -93,6 +96,7 @@ exports.localLogin = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        email: user.email,
         authProvider: user.authProvider,
       },
     });

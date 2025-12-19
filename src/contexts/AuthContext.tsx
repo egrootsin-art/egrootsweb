@@ -6,8 +6,8 @@ interface AuthContextType {
   user: any | null;
   isAuthenticated: boolean;
   loading: boolean;
-  signup: (name: string, password: string) => Promise<boolean>;
-  login: (name: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   setAuthData: (data: { token: string; user: any }) => void;
 }
@@ -38,9 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading(false);
   }, []);
 
-  // SIGNUP (Local - Name + Password only)
-  const signup = async (name: string, password: string): Promise<boolean> => {
-    const res = await signupUser(name, password);
+  // SIGNUP (Local - Name + Email + Password)
+  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+    const res = await signupUser(name, email, password);
 
     if (res.token && res.user) {
       localStorage.setItem("token", res.token);
@@ -52,9 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return false;
   };
 
-  // LOGIN (Local - Name + Password)
-  const login = async (name: string, password: string): Promise<boolean> => {
-    const res = await loginUser(name, password);
+  // LOGIN (Local - Email + Password)
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const res = await loginUser(email, password);
 
     if (res.token && res.user) {
       localStorage.setItem("token", res.token);

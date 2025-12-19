@@ -10,23 +10,24 @@ export interface AuthResponse {
 // SIGNUP (Local - Name + Password only)
 export const signupUser = async (
   name: string,
+  email: string,
   password: string
 ): Promise<AuthResponse> => {
   try {
-    const res = await axios.post("/api/auth/signup", { name, password });
+    const res = await axios.post("/api/auth/signup", { name, email, password });
     return res.data;
   } catch (err: any) {
     return { error: err.response?.data?.message || "Signup Failed" };
   }
 };
 
-// LOGIN (Local - Name + Password)
+// LOGIN (Local - Email + Password)
 export const loginUser = async (
-  name: string,
+  email: string,
   password: string
 ): Promise<AuthResponse> => {
   try {
-    const res = await axios.post("/api/auth/login", { name, password });
+    const res = await axios.post("/api/auth/login", { email, password });
     return res.data;
   } catch (err: any) {
     return { error: err.response?.data?.message || "Login Failed" };

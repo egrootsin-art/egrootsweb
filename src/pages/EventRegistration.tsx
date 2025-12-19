@@ -22,6 +22,8 @@ const EventRegistration = () => {
   const { user, isAuthenticated } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
 
   // Load Razorpay script
   const loadRazorpayScript = () => {
@@ -62,6 +64,10 @@ const EventRegistration = () => {
     if (!isAuthenticated || !user) {
       alert("Please sign in with Google before registering for the event.");
       navigate("/login");
+      return;
+    }
+    if (!name || !password) {
+      alert("Please enter your name and password to proceed.");
       return;
     }
 
@@ -120,6 +126,8 @@ const EventRegistration = () => {
 
             // 6) NOW save registration in contest DB (only after successful payment)
             await axios.post("/api/events/register", {
+              name,
+              password,
               eventId: eventProduct.id,
               eventName: eventProduct.name,
               razorpay_order_id: response.razorpay_order_id,
@@ -181,6 +189,23 @@ const EventRegistration = () => {
                 value={user?.email || ""}
                 disabled
                 placeholder="Sign in with Google to continue"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Your Name</label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter a password for event portal"
               />
             </div>
 
