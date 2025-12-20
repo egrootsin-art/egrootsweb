@@ -42,7 +42,7 @@ const allowedOrigins = [];
 
 // Frontend URL from env (production / staging)
 if (FRONTEND_URL) {
-  allowedOrigins.push(FRONTEND_URL);
+  allowedOrigins.push("*");
 }
 console.log("✅ FRONTEND_URL:", FRONTEND_URL || "Not set");
 
@@ -57,23 +57,24 @@ if (NODE_ENV !== "production") {
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman / server calls
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("❌ Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      // allow ALL Vercel deployments
+      if (origin.endsWith(".vercel.app")) {
+        return callback(null, true);
       }
+
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+app.options("*", (req, res) => res.sendStatus(200));
+
 // ✅ REQUIRED for preflight
-app.options("*", cors());
+// app.options("*", cors());
 
 
 // DATABASE
