@@ -66,7 +66,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Card
       className="group relative tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer"
-      onClick={handleProductClick}
+      onClick={handleQuickView}
     >
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
