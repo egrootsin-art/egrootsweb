@@ -44,6 +44,7 @@ const allowedOrigins = [];
 if (FRONTEND_URL) {
   allowedOrigins.push(FRONTEND_URL);
 }
+console.log("✅ FRONTEND_URL:", FRONTEND_URL || "Not set");
 
 // Local development origins only for non-production
 if (NODE_ENV !== "production") {
