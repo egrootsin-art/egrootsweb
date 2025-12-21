@@ -64,6 +64,7 @@ export const featuredProducts: Product[] = [
   {
     id: "5",
     name: "Custom PCB Design Service",
+    price: null,
     image:
       "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=400&h=400&fit=crop",
     category: "PCB Design Services",

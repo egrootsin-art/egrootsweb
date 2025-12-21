@@ -181,7 +181,7 @@ const Login: React.FC = () => {
         <p className="text-center text-sm text-gray-300 mt-6">
           Don't have an account?{" "}
           <button
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/products")}
             className="text-blue-400 underline"
           >
             Sign Up
