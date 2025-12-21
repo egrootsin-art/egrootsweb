@@ -304,10 +304,17 @@ const ProductDetail = () => {
 
             {/* Price */}
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-primary">
-                ₹{product.price.toLocaleString()}
-              </span>
-              {product.originalPrice && (
+             {product.price != null ? (
+  <span className="text-4xl font-bold text-primary">
+    ₹{product.price.toLocaleString()}
+  </span>
+) : (
+  <span className="text-xl font-semibold text-muted-foreground">
+    Contact for Price
+  </span>
+)}
+
+              {product.originalPrice != null && product.price != null && (
                 <>
                   <span className="text-xl text-muted-foreground line-through">
                     ₹{product.originalPrice.toLocaleString()}
@@ -367,21 +374,32 @@ const ProductDetail = () => {
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
-                <span className="text-sm text-muted-foreground ml-2">
-                  Total: ₹{(product.price * quantity).toLocaleString()}
-                </span>
+                {product.price != null && (
+  <span className="text-sm text-muted-foreground ml-2">
+    Total: ₹{(product.price * quantity).toLocaleString()}
+  </span>
+)}
+
               </div>
             </div>
 
             {/* Action Buttons */}
             {/* Action Buttons */}
 <div className="space-y-3">
-  {product.category === "Events" ? (
-    <Button
-      size="lg"
-      className="w-full"
-      onClick={() => navigate(`/events/register/${product.id}`)}
-    >
+  {product.price == null ? (
+  <Button
+    size="lg"
+    className="w-full"
+    onClick={() => navigate("/contact")}
+  >
+    Request Quote
+  </Button>
+) : product.category === "Events" ? (
+  <Button
+    size="lg"
+    className="w-full"
+    onClick={() => navigate(`/events/register/${product.id}`)}
+  >
       Register for Event
     </Button>
   ) : !itemAdded && !isInCart ? (
