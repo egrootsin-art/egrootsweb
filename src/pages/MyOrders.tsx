@@ -20,6 +20,39 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// Component for individual order item with image error handling
+const OrderItem = ({ item }: { item: any }) => {
+  const [imageError, setImageError] = useState(false);
+  const imageSrc = item.image && !imageError 
+    ? item.image 
+    : "/placeholder.svg";
+
+  return (
+    <div className="flex items-center gap-4 p-3 rounded-lg bg-gray-50">
+      <img
+        src={imageSrc}
+        alt={item.name}
+        className="w-16 h-16 object-cover rounded-lg bg-gray-200"
+        onError={() => setImageError(true)}
+      />
+      <div className="flex-1">
+        <h4 className="font-medium text-gray-900">
+          {item.name}
+        </h4>
+        <p className="text-sm text-gray-500">
+          {item.category}
+        </p>
+        <p className="text-sm mt-1 text-gray-700">
+          Qty: {item.quantity} — ₹{item.price}
+        </p>
+      </div>
+      <p className="font-bold text-right text-gray-900">
+        ₹{item.quantity * item.price}
+      </p>
+    </div>
+  );
+};
+
 const MyOrders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
@@ -204,30 +237,7 @@ const MyOrders = () => {
                 <div className="space-y-3 mb-4">
                   {order.items?.length > 0 ? (
                     order.items.map((item: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-4 p-3 rounded-lg bg-gray-50"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">
-                            {item.name}
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            {item.category}
-                          </p>
-                          <p className="text-sm mt-1 text-gray-700">
-                            Qty: {item.quantity} — ₹{item.price}
-                          </p>
-                        </div>
-                        <p className="font-bold text-right text-gray-900">
-                          ₹{item.quantity * item.price}
-                        </p>
-                      </div>
+                      <OrderItem key={index} item={item} />
                     ))
                   ) : (
                     <p className="text-gray-500">No items in this order.</p>

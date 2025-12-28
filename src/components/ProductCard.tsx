@@ -89,7 +89,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       {!product.inStock && (
         <div className="absolute inset-0 bg-black/60 z-20 flex items-center justify-center">
           <Badge variant="destructive" className="text-lg px-4 py-2">
-            Out of Stock
+            Coming Soon
           </Badge>
         </div>
       )}
@@ -167,7 +167,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
     >
       <ShoppingCart className="w-4 h-4 mr-2" />
-      {product.inStock ? "Add to Cart" : "Out of Stock"}
+      {product.inStock ? "Add to Cart" : "Coming Soon"}
     </Button>
   )}
 </CardFooter>

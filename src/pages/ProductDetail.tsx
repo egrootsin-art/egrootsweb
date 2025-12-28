@@ -347,7 +347,7 @@ const ProductDetail = () => {
                   In Stock
                 </Badge>
               ) : (
-                <Badge variant="destructive">Out of Stock</Badge>
+                <Badge variant="destructive">Coming Soon</Badge>
               )}
             </div>
 
@@ -410,7 +410,7 @@ const ProductDetail = () => {
       disabled={!product.inStock}
     >
       <ShoppingCart className="mr-2 w-5 h-5" />
-      {product.inStock ? "Add to Cart" : "Out of Stock"}
+      {product.inStock ? "Add to Cart" : "Coming Soon"}
     </Button>
   ) : (
     <div className="space-y-2">
@@ -446,21 +446,14 @@ const ProductDetail = () => {
                     <span>
                       {product.inStock
                         ? "In Stock - Ready to Ship"
-                        : "Out of Stock"}
+                        : "Coiming Soon "}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <Truck className="w-5 h-5 text-blue-600" />
                     <span>Free Shipping on Orders Above ₹15000</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Shield className="w-5 h-5 text-purple-600" />
-                    <span>1 Year Manufacturer Warranty</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <Package className="w-5 h-5 text-orange-600" />
-                    <span>7 Days Return Policy</span>
-                  </div>
+                  
                 </div>
               </CardContent>
             </Card>
