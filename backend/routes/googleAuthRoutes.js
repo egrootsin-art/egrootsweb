@@ -55,9 +55,14 @@ router.get(
         delete req.session.oauthState;
       }
 
-      
+      const redirectURL =
+        `${FRONTEND_URL}/auth/success?token=${encodeURIComponent(token)}` +
+        `&name=${encodeURIComponent(user.name)}` +
+        (user.email ? `&email=${encodeURIComponent(user.email)}` : "") +
+        (user.picture ? `&picture=${encodeURIComponent(user.picture)}` : "") +
+        `&authProvider=${encodeURIComponent(user.authProvider)}`;3
 
-      return res.redirect("/");
+      return res.redirect(redirectURL);
     } catch (error) {
       console.error("❌ Error in Google OAuth callback:", error);
       const errorMessage = encodeURIComponent(error.message || "Authentication failed");
