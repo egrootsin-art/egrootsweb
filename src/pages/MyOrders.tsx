@@ -43,11 +43,11 @@ const OrderItem = ({ item }: { item: any }) => {
           {item.category}
         </p>
         <p className="text-sm mt-1 text-gray-700">
-          Qty: {item.quantity} — ₹{item.price}
+          Qty: {item.quantity} — ₹{typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
         </p>
       </div>
       <p className="font-bold text-right text-gray-900">
-        ₹{item.quantity * item.price}
+        ₹{((typeof item.price === 'number' ? item.price : parseFloat(item.price || 0)) * (typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity || 1))).toFixed(2)}
       </p>
     </div>
   );

@@ -227,16 +227,32 @@ const Order = () => {
 
             // 6) Save order in MongoDB
             console.log("💾 Saving order to database...");
-            const orderPayload = {
-              customer: customerInfo,
-              items: items.map((item) => ({
+            
+            // Validate items and ensure prices are correct
+            const validatedItems = items.map((item) => {
+              const price = typeof item.price === 'number' && item.price > 0 
+                ? item.price 
+                : (parseFloat(item.price) || 0);
+              
+              if (price <= 0) {
+                console.error(`❌ Invalid price for item ${item.name}: ${item.price}`);
+              }
+              
+              console.log(`📦 Item: ${item.name}, Price: ₹${price}, Qty: ${item.quantity}`);
+              
+              return {
                 id: item.id,
                 name: item.name,
-                price: item.price,
+                price: price,
                 quantity: item.quantity,
                 category: item.category || "Uncategorized",
                 image: item.image || "/placeholder.svg",
-              })),
+              };
+            });
+            
+            const orderPayload = {
+              customer: customerInfo,
+              items: validatedItems,
               subtotal: subtotal,
               shipping: shippingCost,
               totalAmount: grandTotal,
@@ -247,6 +263,7 @@ const Order = () => {
             };
 
             console.log("📦 Order payload:", orderPayload);
+            console.log("💰 Item prices:", validatedItems.map(i => `${i.name}: ₹${i.price}`));
 
             const res = await axios.post("/api/orders/create", orderPayload);
 

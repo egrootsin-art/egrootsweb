@@ -10,10 +10,25 @@ router.post('/create', async (req, res) => {
   try {
     const { customer, items, totalAmount, paymentMethod } = req.body;
 
+    // Validate and ensure prices are numbers
+    const validatedItems = items.map(item => {
+      const price = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+      if (price <= 0) {
+        console.warn(`⚠️ Invalid price for item ${item.name}: ${item.price}, defaulting to 0`);
+      }
+      return {
+        ...item,
+        price: price,
+        quantity: typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity) || 1,
+      };
+    });
+
+    console.log("📦 Order items with prices:", validatedItems.map(i => ({ name: i.name, price: i.price, quantity: i.quantity })));
+
     const newOrder = new Order({
       customer,
-      items,
-      totalAmount,
+      items: validatedItems,
+      totalAmount: typeof totalAmount === 'number' ? totalAmount : parseFloat(totalAmount) || 0,
       paymentMethod: paymentMethod || "None",
       status: "Pending",
     });
@@ -27,6 +42,7 @@ router.post('/create', async (req, res) => {
     });
 
   } catch (err) {
+    console.error("❌ Order creation error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
