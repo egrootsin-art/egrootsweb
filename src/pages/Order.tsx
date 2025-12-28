@@ -232,7 +232,7 @@ const Order = () => {
             const validatedItems = items.map((item) => {
               const price = typeof item.price === 'number' && item.price > 0 
                 ? item.price 
-                : (parseFloat(item.price) || 0);
+                : (parseFloat(item.price+"") || 0);
               
               if (price <= 0) {
                 console.error(`❌ Invalid price for item ${item.name}: ${item.price}`);

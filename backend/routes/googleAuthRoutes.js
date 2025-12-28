@@ -60,7 +60,7 @@ router.get(
         `&name=${encodeURIComponent(user.name)}` +
         (user.email ? `&email=${encodeURIComponent(user.email)}` : "") +
         (user.picture ? `&picture=${encodeURIComponent(user.picture)}` : "") +
-        `&authProvider=${encodeURIComponent(user.authProvider)}`;3
+        `&authProvider=${encodeURIComponent(user.authProvider)}`;
 
       return res.redirect(redirectURL);
     } catch (error) {
