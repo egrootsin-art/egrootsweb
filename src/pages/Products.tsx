@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
@@ -269,20 +269,38 @@ const Products = () => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Tutorials</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Community Forum</a></li>
-                <li><a href="/contact" className="hover:text-primary transition-colors">Contact Us</a></li>
+                <li><Link to="/terms" className="hover:text-primary transition-colors">Documentation</Link></li>
+                <li>
+                  <a 
+                    href="https://www.youtube.com/@E-GROOTS" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Tutorials
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://www.instagram.com/egroots.in?igsh=MXJla2V2NXA2NHRuZA%3D%3D&utm_source=qr" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Community Forum
+                  </a>
+                </li>
+                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-semibold text-foreground mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+                <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link to="/about" className="hover:text-primary transition-colors">Careers</Link></li>
+                <li><Link to="/terms" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
           </div>

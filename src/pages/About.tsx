@@ -99,10 +99,10 @@ const About = () => {
             <Card className="border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300">
               <CardContent className="p-6 sm:p-8">
                 <Target className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 p-3 rounded-xl mb-3 sm:mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-white-900 mb-3 sm:mb-4">
                   Our Mission
                 </h3>
-                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p className="text-sm sm:text-base text-green-700 leading-relaxed">
                   To democratize access to cutting-edge technology education by
                   providing affordable, high-quality components and
                   comprehensive learning resources that inspire creativity and
@@ -114,10 +114,10 @@ const About = () => {
             <Card className="border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300">
               <CardContent className="p-6 sm:p-8">
                 <Lightbulb className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 p-3 rounded-xl mb-3 sm:mb-4" />
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-white-900 mb-3 sm:mb-4">
                   Our Vision
                 </h3>
-                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                <p className="text-sm sm:text-base text-green-700 leading-relaxed">
                   A world where every student has the tools and knowledge to
                   become a technology creator, not just a consumer, fostering a
                   generation of problem-solvers who will tackle tomorrow&apos;s
@@ -151,10 +151,10 @@ const About = () => {
                   <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
                     <span className="text-emerald-600">{value.icon}</span>
                   </div>
-                  <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-2">
+                  <h3 className="font-semibold text-base sm:text-lg text-white-900 mb-2">
                     {value.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-green-700 leading-relaxed">
                     {value.description}
                   </p>
                 </CardContent>
