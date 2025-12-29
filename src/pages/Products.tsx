@@ -222,7 +222,7 @@ const Products = () => {
                 : "grid-cols-1"
             }`}>
               {sortedProducts.map((product, index) => (
-                <div key={product.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                <div key={product.id} className="animate-slide-up h-full" style={{ animationDelay: `${index * 0.05}s` }}>
                   <ProductCard product={product} />
                 </div>
               ))}

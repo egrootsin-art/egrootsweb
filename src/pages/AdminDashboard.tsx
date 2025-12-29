@@ -570,8 +570,10 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                 <p className="text-sm">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
                       <TableHead className="font-semibold">Order ID</TableHead>
@@ -633,7 +635,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                         </TableCell>
 
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button
                               onClick={() => handleViewDetails(order)}
                               variant="outline"
@@ -641,7 +643,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                               className="flex items-center gap-1"
                             >
                               <Eye size={14} />
-                              <span className="hidden lg:inline">View</span>
+                              <span className="hidden xl:inline">View</span>
                             </Button>
 
                             {/* ✅ CANCEL BUTTON */}
@@ -657,11 +659,18 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                                     order.status?.toLowerCase() === "pending"
                                       ? "bg-blue-600 hover:bg-blue-700"
                                       : "bg-yellow-600 hover:bg-yellow-700"
-                                  } text-white hidden sm:flex`}
+                                  } text-white`}
                                 >
-                                  {order.status?.toLowerCase() === "pending"
-                                    ? "Process"
-                                    : "Complete"}
+                                  <span className="hidden lg:inline">
+                                    {order.status?.toLowerCase() === "pending"
+                                      ? "Process"
+                                      : "Complete"}
+                                  </span>
+                                  <span className="lg:hidden">
+                                    {order.status?.toLowerCase() === "pending"
+                                      ? "→"
+                                      : "✓"}
+                                  </span>
                                 </Button>
 
                                 <Button
@@ -671,7 +680,7 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                                   className="flex items-center gap-1"
                                 >
                                   <X size={14} />
-                                  <span className="hidden lg:inline">Cancel</span>
+                                  <span className="hidden xl:inline">Cancel</span>
                                 </Button>
                               </>
                             )}
@@ -681,7 +690,102 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                  {filteredOrders.map((order) => (
+                    <Card key={order._id} className="shadow-md">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          {/* Order Header */}
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-mono text-xs text-gray-500 mb-1">
+                                Order #{order._id.slice(-6).toUpperCase()}
+                              </p>
+                              <h3 className="font-semibold text-gray-900">
+                                {order.customer?.name}
+                              </h3>
+                              <p className="text-xs text-gray-600 mt-1">
+                                {order.customer?.email}
+                              </p>
+                            </div>
+                            <Badge className={getStatusBadgeClass(order.status)}>
+                              {order.status}
+                            </Badge>
+                          </div>
+
+                          {/* Order Details */}
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <p className="text-xs text-gray-500">Total</p>
+                              <p className="font-bold text-green-600">
+                                ₹{order.totalAmount?.toFixed(2)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Date</p>
+                              <p className="text-gray-700">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            {order.customer?.phone && (
+                              <div className="col-span-2">
+                                <p className="text-xs text-gray-500">Phone</p>
+                                <p className="text-gray-700">{order.customer.phone}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex flex-wrap gap-2 pt-2 border-t">
+                            <Button
+                              onClick={() => handleViewDetails(order)}
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                            >
+                              <Eye size={14} className="mr-1" />
+                              View
+                            </Button>
+
+                            {order.status?.toLowerCase() !== "completed" && 
+                             order.status?.toLowerCase() !== "cancelled" && (
+                              <>
+                                <Button
+                                  onClick={() =>
+                                    handleToggleStatus(order._id, order.status)
+                                  }
+                                  size="sm"
+                                  className={`flex-1 ${
+                                    order.status?.toLowerCase() === "pending"
+                                      ? "bg-blue-600 hover:bg-blue-700"
+                                      : "bg-yellow-600 hover:bg-yellow-700"
+                                  } text-white`}
+                                >
+                                  {order.status?.toLowerCase() === "pending"
+                                    ? "Process"
+                                    : "Complete"}
+                                </Button>
+                                <Button
+                                  onClick={() => openCancelDialog(order)}
+                                  variant="destructive"
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  <X size={14} className="mr-1" />
+                                  Cancel
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -709,27 +813,27 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                   Customer Information
                 </h3>
                 <div className="bg-gray-50 p-3 rounded-lg space-y-1.5 text-sm">
-                  <div className="flex">
-                    <span className="font-medium w-20">Name:</span>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="font-medium w-full sm:w-20 mb-1 sm:mb-0">Name:</span>
                     <span className="text-gray-700">
                       {selectedOrder.customer?.name}
                     </span>
                   </div>
-                  <div className="flex">
-                    <span className="font-medium w-20">Email:</span>
-                    <span className="text-gray-700">
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="font-medium w-full sm:w-20 mb-1 sm:mb-0">Email:</span>
+                    <span className="text-gray-700 break-all">
                       {selectedOrder.customer?.email}
                     </span>
                   </div>
-                  <div className="flex">
-                    <span className="font-medium w-20">Phone:</span>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="font-medium w-full sm:w-20 mb-1 sm:mb-0">Phone:</span>
                     <span className="text-gray-700">
                       {selectedOrder.customer?.phone}
                     </span>
                   </div>
-                  <div className="flex">
-                    <span className="font-medium w-20">Address:</span>
-                    <span className="text-gray-700">
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="font-medium w-full sm:w-20 mb-1 sm:mb-0">Address:</span>
+                    <span className="text-gray-700 break-words">
                       {selectedOrder.customer?.address || "Not provided"}
                     </span>
                   </div>
@@ -742,7 +846,8 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                   <Package className="w-4 h-4" />
                   Order Items
                 </h3>
-                <div className="border rounded-lg overflow-hidden">
+                {/* Desktop Table */}
+                <div className="hidden sm:block border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
@@ -773,6 +878,30 @@ const handleToggleStatus = async (orderId: string, currentStatus: string) => {
                       </tr>
                     </tfoot>
                   </table>
+                </div>
+                {/* Mobile Card List */}
+                <div className="sm:hidden space-y-2">
+                  {selectedOrder.items?.map((item, i) => (
+                    <div key={i} className="border rounded-lg p-3 bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="text-xs text-gray-500 mt-1">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="font-bold text-green-600">
+                          ₹{((item.price || 0) * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="border-t-2 pt-2 mt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold">Total:</span>
+                      <span className="font-bold text-green-600 text-lg">
+                        ₹{selectedOrder.totalAmount?.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -198,10 +198,10 @@ const Index = () => {
             {featuredProducts.slice(0, 6).map((product, index) => (
               <div
                 key={product.id}
-                className="animate-slide-up"
+                className="animate-slide-up h-full"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow h-full">
                   <ProductCard product={product} />
                 </div>
               </div>

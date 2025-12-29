@@ -78,7 +78,7 @@ const Terms = () => (
       <h2 className="font-semibold text-base">10. Contact Us</h2>
       <p>
         If you have any questions about these Terms & Conditions, please contact
-        us at support@yourcompany.com.
+        us at egroots.in@gmail.com.
       </p>
     </section>
   </div>

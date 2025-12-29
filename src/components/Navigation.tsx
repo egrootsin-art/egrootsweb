@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ShoppingCart, Search, Menu, X, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/logo.png";
 
@@ -11,6 +12,7 @@ const Navigation = () => {
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false); // desktop icon menu
   const [searchTerm, setSearchTerm] = useState("");
   const { items } = useCart();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const categories = [
@@ -40,6 +42,13 @@ const Navigation = () => {
 
   const go = (path: string) => {
     navigate(path);
+    setIsMenuOpen(false);
+    setIsDesktopMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
     setIsMenuOpen(false);
     setIsDesktopMenuOpen(false);
   };
@@ -137,12 +146,24 @@ const Navigation = () => {
                   >
                     Contact
                   </button>
-                  <button
-                    onClick={() => go("/my-orders")}
-                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
-                  >
-                    My Orders
-                  </button>
+                  {user && (
+                    <>
+                      <button
+                        onClick={() => go("/my-orders")}
+                        className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                      >
+                        My Orders
+                      </button>
+                      <div className="border-t border-gray-200 my-1"></div>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -204,19 +225,33 @@ const Navigation = () => {
     Contact
   </button>
 
-  <button
-    onClick={() => go("/my-orders")}
-    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
-  >
-    My Orders
-  </button>
+  {user && (
+    <>
+      <button
+        onClick={() => go("/my-orders")}
+        className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+      >
+        My Orders
+      </button>
 
-  <button
-    onClick={() => go("/home")}
-    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
-  >
-    Dashboard
-  </button>
+      <button
+        onClick={() => go("/home")}
+        className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+      >
+        Dashboard
+      </button>
+
+      <div className="border-t border-gray-200 my-2"></div>
+
+      <button
+        onClick={handleLogout}
+        className="block w-full text-left text-red-600 hover:bg-red-50 transition-colors py-2 flex items-center gap-2"
+      >
+        <LogOut className="w-4 h-4" />
+        Logout
+      </button>
+    </>
+  )}
 </div>
 
           </div>

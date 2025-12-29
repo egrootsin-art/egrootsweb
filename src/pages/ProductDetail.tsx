@@ -22,6 +22,8 @@ import {
   Check,
   Eye,
   User,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface Review {
@@ -50,6 +52,14 @@ const ProductDetail = () => {
   const [reviewText, setReviewText] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(true);
+  
+  // Image gallery state
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [mouseStart, setMouseStart] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const product = featuredProducts.find((p: any) => p.id === id);
 
@@ -67,6 +77,13 @@ const ProductDetail = () => {
       </div>
     );
   }
+
+  // Get images array - use images if available, otherwise use single image
+  const productImages = product.images && product.images.length > 0 
+    ? product.images 
+    : product.image 
+    ? [product.image] 
+    : [];
 
   const discountPercent = product.originalPrice
     ? Math.round(
@@ -226,6 +243,102 @@ const ProductDetail = () => {
         ) / 10
       : product.rating || 0;
 
+  // Image gallery handlers - move one image at a time
+  const handlePreviousImage = () => {
+    if (isSwiping || productImages.length <= 1) return;
+    setIsSwiping(true);
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? productImages.length - 1 : prev - 1
+    );
+    setTimeout(() => setIsSwiping(false), 300); // Prevent rapid swipes
+  };
+
+  const handleNextImage = () => {
+    if (isSwiping || productImages.length <= 1) return;
+    setIsSwiping(true);
+    setCurrentImageIndex((prev) => 
+      prev === productImages.length - 1 ? 0 : prev + 1
+    );
+    setTimeout(() => setIsSwiping(false), 300); // Prevent rapid swipes
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (productImages.length <= 1) return; // No swipe if only one image
+    setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (productImages.length <= 1) return; // No swipe if only one image
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || productImages.length <= 1) {
+      setTouchStart(0);
+      setTouchEnd(0);
+      return;
+    }
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+
+    // Only trigger if swipe distance is sufficient and not already swiping
+    if (Math.abs(distance) > minSwipeDistance && !isSwiping) {
+      if (distance > 0) {
+        // Swipe left - next image (one at a time)
+        handleNextImage();
+      } else {
+        // Swipe right - previous image (one at a time)
+        handlePreviousImage();
+      }
+    }
+    
+    // Reset
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
+  // Mouse drag support for desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (productImages.length <= 1) return; // No drag if only one image
+    setIsDragging(true);
+    setMouseStart(e.clientX);
+    setTouchEnd(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || productImages.length <= 1) return;
+    setTouchEnd(e.clientX);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging || productImages.length <= 1) {
+      setIsDragging(false);
+      setMouseStart(0);
+      setTouchEnd(0);
+      return;
+    }
+    
+    const distance = mouseStart - touchEnd;
+    const minSwipeDistance = 50;
+
+    // Only trigger if drag distance is sufficient and not already swiping
+    if (Math.abs(distance) > minSwipeDistance && !isSwiping) {
+      if (distance > 0) {
+        // Drag left - next image (one at a time)
+        handleNextImage();
+      } else {
+        // Drag right - previous image (one at a time)
+        handlePreviousImage();
+      }
+    }
+    
+    setIsDragging(false);
+    setMouseStart(0);
+    setTouchEnd(0);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -249,14 +362,59 @@ const ProductDetail = () => {
 
         {/* Product Details Grid */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Product Image */}
+          {/* Product Image Gallery */}
           <div className="space-y-4">
-            <div className="relative w-full h-96 rounded-lg overflow-hidden bg-muted">
+            {/* Main Image with Swipe Support - Works for all products */}
+            <div 
+              className={`relative w-full h-96 rounded-lg overflow-hidden bg-muted ${
+                productImages.length > 1 
+                  ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') 
+                  : 'cursor-default'
+              }`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
               <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-cover"
+                src={productImages[currentImageIndex]}
+                alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover transition-opacity duration-300"
               />
+              
+              {/* Navigation Arrows - Only show if multiple images */}
+              {productImages.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full"
+                    onClick={handlePreviousImage}
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full"
+                    onClick={handleNextImage}
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </Button>
+                </>
+              )}
+              
+              {/* Image Counter */}
+              {productImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                  {currentImageIndex + 1} / {productImages.length}
+                </div>
+              )}
+              
+              {/* Badges */}
               {product.isNew && (
                 <Badge className="absolute top-4 left-4 bg-green-600">
                   New
@@ -273,6 +431,29 @@ const ProductDetail = () => {
                 </Badge>
               )}
             </div>
+            
+            {/* Thumbnail Gallery - Only show if multiple images */}
+            {productImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {productImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      currentImageIndex === index
+                        ? "border-primary ring-2 ring-primary"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ✅ COMPLETE Product Info */}
@@ -386,13 +567,13 @@ const ProductDetail = () => {
             {/* Action Buttons */}
             {/* Action Buttons */}
 <div className="space-y-3">
-  {product.price == null ? (
+  {product.category === "PCB Design Services" || product.price == null ? (
   <Button
     size="lg"
     className="w-full"
     onClick={() => navigate("/contact")}
   >
-    Request Quote
+    Contact Us
   </Button>
 ) : product.category === "Events" ? (
   <Button
@@ -446,7 +627,7 @@ const ProductDetail = () => {
                     <span>
                       {product.inStock
                         ? "In Stock - Ready to Ship"
-                        : "Coiming Soon "}
+                        : "Coming Soon "}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">

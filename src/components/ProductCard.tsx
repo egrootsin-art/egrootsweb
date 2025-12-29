@@ -12,6 +12,7 @@ export interface Product {
   price?: number | null;
   originalPrice?: number;
   image: string;
+  images?: string[];  // Multiple images for gallery
   category: string;
   rating?: number;       // now optional
   reviewCount?: number;  // now optional
@@ -65,7 +66,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Card
-      className="group relative tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer"
+      className="group relative tech-hover gradient-card border-border/50 overflow-hidden cursor-pointer h-full flex flex-col"
       onClick={handleQuickView}
     >
       {/* Badges */}
@@ -95,12 +96,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       )}
 
       <CardHeader className="p-0 relative">
-  {/* fixed height, image fully visible */}
-  <div className="relative w-full h-64 bg-muted/20 overflow-hidden flex items-center justify-center">
+  {/* fixed height, image fully covered */}
+  <div className="relative w-full h-64 bg-muted/20 overflow-hidden">
     <img
       src={product.image}
       alt={product.name}
-      className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
 
     {/* Hover Overlay with Quick View */}
@@ -119,7 +120,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 </CardHeader>
 
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         <div className="mb-2">
           <Badge variant="outline" className="text-xs">
             {product.category}
@@ -130,20 +131,26 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.name}
         </h3>
 
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-3 flex-1">
           {product.description}
         </p>
 
         {/* Rating removed from card */}
 
-        {/* Price */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl font-bold text-primary">
-            ₹{product.price}
-          </span>
-          {product.originalPrice && (
+        {/* Price - Always at bottom of content */}
+        <div className="flex items-center gap-2 mt-auto">
+          {product.price != null ? (
+            <span className="text-2xl font-bold text-primary">
+              ₹{product.price.toLocaleString()}
+            </span>
+          ) : (
+            <span className="text-lg font-semibold text-muted-foreground">
+              Contact for Price
+            </span>
+          )}
+          {product.originalPrice && product.price != null && (
             <span className="text-lg text-muted-foreground line-through">
-              ₹{product.originalPrice}
+              ₹{product.originalPrice.toLocaleString()}
             </span>
           )}
         </div>
@@ -159,6 +166,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
       className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
     >
       Register for Event
+    </Button>
+  ) : product.category === "PCB Design Services" || product.price == null ? (
+    <Button
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate("/contact");
+      }}
+      className="w-full tech-hover bg-primary hover:bg-primary/90 text-primary-foreground"
+    >
+      Contact Us
     </Button>
   ) : (
     <Button
