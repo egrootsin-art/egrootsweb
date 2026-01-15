@@ -18,6 +18,12 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
+
+# Environment variables
+.env
+
+# OS generated files
+Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
