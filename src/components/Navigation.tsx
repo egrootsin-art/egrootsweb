@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ShoppingCart, Search, Menu, X, LayoutDashboard, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ShoppingCart, Search, Menu, X, LayoutDashboard, LogOut, User, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/CartContext";
@@ -10,6 +10,7 @@ import logoImage from "../assets/logo.png";
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);       // mobile menu
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false); // desktop icon menu
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // profile menu
   const [searchTerm, setSearchTerm] = useState("");
   const { items } = useCart();
   const { logout, user } = useAuth();
@@ -44,6 +45,7 @@ const Navigation = () => {
     navigate(path);
     setIsMenuOpen(false);
     setIsDesktopMenuOpen(false);
+    setIsProfileMenuOpen(false);
   };
 
   const handleLogout = () => {
@@ -51,7 +53,30 @@ const Navigation = () => {
     navigate("/");
     setIsMenuOpen(false);
     setIsDesktopMenuOpen(false);
+    setIsProfileMenuOpen(false);
   };
+
+  // Close menus when clicking outside
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+      if (desktopMenuRef.current && !desktopMenuRef.current.contains(event.target as Node)) {
+        setIsDesktopMenuOpen(false);
+      }
+    };
+
+    if (isProfileMenuOpen || isDesktopMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileMenuOpen, isDesktopMenuOpen]);
 
   return (
     <nav className="bg-white sticky top-0 z-50 border-b border-gray-200/20">
@@ -60,11 +85,15 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 flex items-center justify-center">
+            <div className="w-10 h-10 flex items-center justify-center bg-white rounded overflow-hidden">
               <img
                 src={logoImage}
                 alt="E-Groots Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.error("Failed to load logo image:", logoImage);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
             <div>
@@ -110,11 +139,99 @@ const Navigation = () => {
               </Button>
             </Link>
 
-            {/* Desktop icon menu (three lines, black) */}
-            <div className="relative hidden md:block">
+            {/* Profile */}
+            <div className="relative" ref={profileMenuRef}>
               <button
                 type="button"
-                onClick={() => setIsDesktopMenuOpen((prev) => !prev)}
+                onClick={() => {
+                  setIsProfileMenuOpen((prev) => !prev);
+                  setIsDesktopMenuOpen(false);
+                }}
+                className="p-2 relative"
+              >
+                {user ? (
+                  <UserCircle className="w-5 h-5 text-black hover:text-blue-600 transition-colors" />
+                ) : (
+                  <User className="w-5 h-5 text-black hover:text-blue-600 transition-colors" />
+                )}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+                  {user ? (
+                    <>
+                      <div className="px-4 py-3 border-b border-gray-200">
+                        <p className="text-sm font-semibold text-gray-900">{user.name || "User"}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          go("/my-orders");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        My Orders
+                      </button>
+                      <button
+                        onClick={() => {
+                          go("/home");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dashboard
+                      </button>
+                      <div className="border-t border-gray-200 my-1"></div>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          go("/login");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <User className="w-4 h-4" />
+                        Login
+                      </button>
+                      <button
+                        onClick={() => {
+                          go("/signup");
+                          setIsProfileMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <UserCircle className="w-4 h-4" />
+                        Sign Up
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop icon menu (three lines, black) */}
+            <div className="relative hidden md:block" ref={desktopMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDesktopMenuOpen((prev) => !prev);
+                  setIsProfileMenuOpen(false);
+                }}
                 className="p-2"
               >
                 <Menu className="w-5 h-5 text-black" />
@@ -135,6 +252,12 @@ const Navigation = () => {
                     Products
                   </button>
                   <button
+                    onClick={() => go("/courses")}
+                    className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                  >
+                    Courses
+                  </button>
+                  <button
                     onClick={() => go("/about")}
                     className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
                   >
@@ -147,22 +270,12 @@ const Navigation = () => {
                     Contact
                   </button>
                   {user && (
-                    <>
-                      <button
-                        onClick={() => go("/my-orders")}
-                        className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
-                      >
-                        My Orders
-                      </button>
-                      <div className="border-t border-gray-200 my-1"></div>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </>
+                    <button
+                      onClick={() => go("/my-orders")}
+                      className="block w-full text-left px-4 py-2  text-black hover:bg-gray-100"
+                    >
+                      My Orders
+                    </button>
                   )}
                 </div>
               )}
@@ -172,7 +285,10 @@ const Navigation = () => {
             <Button
               variant="ghost"
               className="md:hidden p-2"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
+              onClick={() => {
+                setIsMenuOpen((prev) => !prev);
+                setIsProfileMenuOpen(false);
+              }}
             >
               {isMenuOpen ? (
                 <X className="w-5 h-5 text-black" />
@@ -212,6 +328,13 @@ const Navigation = () => {
   </button>
 
   <button
+    onClick={() => go("/courses")}
+    className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
+  >
+    Courses
+  </button>
+
+  <button
     onClick={() => go("/about")}
     className="block w-full text-left text-black hover:bg-gray-100 transition-colors py-2"
   >
@@ -245,7 +368,7 @@ const Navigation = () => {
 
       <button
         onClick={handleLogout}
-        className="block w-full text-left text-red-600 hover:bg-red-50 transition-colors py-2 flex items-center gap-2"
+        className="flex w-full items-center gap-2 py-2 text-left text-red-600 transition-colors hover:bg-red-50"
       >
         <LogOut className="w-4 h-4" />
         Logout

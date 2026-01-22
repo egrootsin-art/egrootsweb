@@ -197,4 +197,29 @@ export const testimonials: {
   avatar: string;
   content: string;
   rating: number;
-}[] = [];
+}[] = [
+  {
+    id: "1",
+    name: "S. Priya",
+    role: "Assistant Professor, Namakkal",
+    avatar: "https://ui-avatars.com/api/?name=S+Priya&background=26A044&color=fff",
+    content: "The robotics and AI workshop was very useful for our college students. They learned Arduino programming and real-time project implementation.",
+    rating: 5,
+  },
+  {
+    id: "2",
+    name: "M. Senthil Kumar",
+    role: "Parent, Tiruchengode",
+    avatar: "https://ui-avatars.com/api/?name=M+Senthil+Kumar&background=15315B&color=fff",
+    content: "My child enjoyed the 3D designing and printing sessions. The trainers explained concepts in a simple and practical way that students could easily understand.",
+    rating: 5,
+  },
+  {
+    id: "3",
+    name: "R. Karthik",
+    role: "Principal, Erode",
+    avatar: "https://ui-avatars.com/api/?name=R+Karthik&background=26A044&color=fff",
+    content: "E-Groots has transformed our school's STEM lab with comprehensive training and quality equipment. Our students are now building innovative projects.",
+    rating: 5,
+  },
+];
