@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import Terms from "./pages/Terms";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
 import EventRegistration from "@/pages/EventRegistration";
 import EventThankYou from "@/pages/EventThankYou";
 
@@ -58,6 +59,7 @@ const AppRoutes = () => {
       <Route path="/products" element={<Products />} />
       <Route path="/product/:id" element={<ProductDetail />} /> {/* ✅ Product Detail Route */}
       <Route path="/courses" element={<Courses />} />
+      <Route path="/course/:id" element={<CourseDetail />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/terms" element={<Terms />} />

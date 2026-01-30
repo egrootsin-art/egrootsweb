@@ -97,7 +97,7 @@ const Navigation = () => {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-primary">E-Groots</h1>
+              <h1 className="text-xl font-bold text-black">E-Groots</h1>
               <p className="text-xs text-muted-foreground">
                 Empowering Future Innovators
               </p>

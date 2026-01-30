@@ -37,7 +37,7 @@ require("./config/passport");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// CORS
+// CORS - Allow both localhost and domain
 const allowedOrigins = [];
 
 // Frontend URL from env (production / staging)
@@ -46,14 +46,17 @@ if (FRONTEND_URL) {
 }
 console.log("✅ FRONTEND_URL:", FRONTEND_URL || "Not set");
 
-// Local development origins only for non-production
-if (NODE_ENV !== "production") {
-  allowedOrigins.push(
-    "http://localhost:5173", 
-    "http://localhost:8080",
-    "http://localhost:5000" // ✅ Allow self-origin if needed
-  );
-}
+// Always allow localhost origins (for both development and production testing)
+allowedOrigins.push(
+  "http://localhost:5173", 
+  "http://localhost:8080",
+  "http://localhost:3000",
+  "http://localhost:5000", // ✅ Allow self-origin if needed
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:8080",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5000"
+);
 
 app.use(
   cors({
@@ -98,6 +101,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const productRoutes = require("./routes/productRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 
 // ✅ REGISTER ROUTES
 app.use("/api/auth", authRoutes);
@@ -106,6 +110,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api", eventRoutes);
+app.use("/api", courseRoutes);
 
 console.log("✅ Routes registered:");
 console.log("   - /api/auth");

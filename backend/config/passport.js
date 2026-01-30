@@ -2,7 +2,19 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const { handleGoogleAuthWithFormData } = require("../controllers/googleAuthController");
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+// Get backend URL and FORCE HTTP for localhost
+let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+
+// If BACKEND_URL contains localhost but uses HTTPS, force HTTP
+if (BACKEND_URL.includes("localhost") || BACKEND_URL.includes("127.0.0.1")) {
+  BACKEND_URL = BACKEND_URL.replace(/^https:/, "http:");
+}
+
+const CALLBACK_URL = `${BACKEND_URL}/api/auth/google/callback`;
+
+// Log the callback URL for debugging
+console.log("🔗 Google OAuth Callback URL:", CALLBACK_URL);
+console.log("⚠️  Make sure this URL is added to Google Cloud Console as an authorized redirect URI!");
 
 /**
  * Google OAuth Strategy Configuration
@@ -12,7 +24,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${BACKEND_URL}/api/auth/google/callback`,
+      callbackURL: CALLBACK_URL,
       passReqToCallback: true, // Enable access to req object
     },
     async (req, accessToken, refreshToken, profile, done) => {

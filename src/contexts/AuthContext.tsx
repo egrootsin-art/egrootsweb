@@ -32,10 +32,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const savedUser = localStorage.getItem("user");
 
     if (savedToken && savedUser) {
+      // Set token in axios defaults
       axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        // If user data is corrupted, clear it
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        delete axios.defaults.headers.common["Authorization"];
+      }
     }
     setLoading(false);
+
+    // Listen for token expiration events
+    const handleTokenExpired = () => {
+      setUser(null);
+    };
+    window.addEventListener("token-expired", handleTokenExpired);
+    return () => {
+      window.removeEventListener("token-expired", handleTokenExpired);
+    };
   }, []);
 
   // SIGNUP (Local - Name + Email + Password)

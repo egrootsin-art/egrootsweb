@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import Newsletter from "@/components/Newsletter";
@@ -10,10 +10,42 @@ import { Link } from "react-router-dom";
 
 const Index = () => {
   const [openItem, setOpenItem] = useState<"STEM" | "STEAM" | "STREAM" | null>("STEM");
+  const [isStatsVisible, setIsStatsVisible] = useState(false);
+  const statsRef = useRef<HTMLElement>(null);
 
   const toggleItem = (item: "STEM" | "STEAM" | "STREAM") => {
     setOpenItem(prev => (prev === item ? null : item));
   };
+
+  // Intersection Observer for Statistics section - only trigger once
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isStatsVisible) {
+            setIsStatsVisible(true);
+            // Unobserve after first trigger so animation only happens once
+            if (statsRef.current) {
+              observer.unobserve(statsRef.current);
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of the section is visible
+      }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => {
+      if (statsRef.current) {
+        observer.unobserve(statsRef.current);
+      }
+    };
+  }, [isStatsVisible]);
 
   // Social media links - update with your actual links
   const socialLinks = [
@@ -250,39 +282,39 @@ const Index = () => {
       </section>
 
       {/* Statistics Section */}
-      <section className="py-16 bg-[#15315B] relative overflow-hidden">
+      <section ref={statsRef} className="py-16 bg-[#15315B] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 right-0 w-64 h-64 bg-green-400 rounded-full blur-3xl"></div>
         </div>
         <div className="max-w-6xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center animate-float" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-6">
+            <Card className={`bg-white/10 backdrop-blur-sm border-white/20 text-center ${isStatsVisible ? 'animate-slide-up-scale' : 'opacity-0'}`} style={{ animationDelay: '0s', animationFillMode: 'forwards' }}>
+              <CardContent className={`p-6 ${isStatsVisible ? 'animate-float' : ''}`} style={{ animationDelay: '0.8s' }}>
                 <Trophy className="w-12 h-12 text-blue-300 mx-auto mb-4" />
                 <div className="text-4xl font-bold text-white mb-2">500+</div>
                 <div className="text-sm text-blue-200">Student Projects Guided</div>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center animate-float" style={{ animationDelay: '0.5s' }}>
-              <CardContent className="p-6">
+            <Card className={`bg-white/10 backdrop-blur-sm border-white/20 text-center ${isStatsVisible ? 'animate-slide-up-scale' : 'opacity-0'}`} style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+              <CardContent className={`p-6 ${isStatsVisible ? 'animate-float' : ''}`} style={{ animationDelay: '1s' }}>
                 <School className="w-12 h-12 text-blue-300 mx-auto mb-4" />
                 <div className="text-4xl font-bold text-white mb-2">250+</div>
                 <div className="text-sm text-blue-200">Schools & Colleges Served</div>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center animate-float" style={{ animationDelay: '1s' }}>
-              <CardContent className="p-6">
+            <Card className={`bg-white/10 backdrop-blur-sm border-white/20 text-center ${isStatsVisible ? 'animate-slide-up-scale' : 'opacity-0'}`} style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
+              <CardContent className={`p-6 ${isStatsVisible ? 'animate-float' : ''}`} style={{ animationDelay: '1.2s' }}>
                 <BookOpen className="w-12 h-12 text-blue-300 mx-auto mb-4" />
                 <div className="text-4xl font-bold text-white mb-2">100+</div>
                 <div className="text-sm text-blue-200">Workshops & Training Programs</div>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center animate-float" style={{ animationDelay: '1.5s' }}>
-              <CardContent className="p-6">
+            <Card className={`bg-white/10 backdrop-blur-sm border-white/20 text-center ${isStatsVisible ? 'animate-slide-up-scale' : 'opacity-0'}`} style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
+              <CardContent className={`p-6 ${isStatsVisible ? 'animate-float' : ''}`} style={{ animationDelay: '1.4s' }}>
                 <Award className="w-12 h-12 text-blue-300 mx-auto mb-4" />
                 <div className="text-4xl font-bold text-white mb-2">20+</div>
                 <div className="text-sm text-blue-200">STEM Programs Delivered</div>
